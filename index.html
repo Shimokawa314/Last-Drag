@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LAST DRAG</title>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA20lEQVR4nO2XwQ2DMAxFf6xeGYA12AExAjMyAmKHrtEBGKA9RYqsJrENMjnkn4BY/JcPOCGA6fy8v/zanRrGKaTn5Gn+z4NyA14Q5G3OIcIT5qmoXtIgwLrMWJf5FoCX1lgyvu2H+J7iBFLzbT+KJpp0RC+hdmaa+moCllhjrSSJIoDFXAvR7md4ZfZRkhTaTaADdABNM8lJ8iW1mwBwLQVpH6kmYIHQNDHxlowvx9YaMwA3KEnTvk2b0hyIZd3ou2Li/2qeGsYpUDx4whxIHoEnROpFuQEPcwD4AWt6dIE7hurtAAAAAElFTkSuQmCC">
+<link rel="icon" type="image/png" sizes="512x512" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LAST DRAG">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F3E7CE">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F3E7CE;
+    --panel: #FBF4E4;
+    --panel-line: rgba(74,46,19,0.20);
+    --ink: #4A2E13;
+    --ink-mid: #9C6B33;
+    --ink-soft: rgba(74,46,19,0.14);
+    --ink-shadow: rgba(74,46,19,0.20);
+    --text: #4A2E13;
+    --text-muted: #8A6A45;
+    --text-faint: #BFA47C;
+    --wake: #3D7A5C;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color-scheme: light;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(74,46,19,0.05), transparent 60%),
+      var(--bg);
+    position: relative;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    text-align: center;
+    padding-top: 8px;
+  }
+
+  .mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .tagline {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    background: rgba(74,46,19,0.06);
+    padding: 4px;
+    border-radius: 3px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 10px 0;
+    border-radius: 2px;
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+
+  .tab-btn.active {
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 2px 8px rgba(74,46,19,0.10);
+  }
+
+  .view { display: none; flex-direction: column; gap: 22px; }
+  .view.active { display: flex; }
+
+  .data-subview { display: none; flex-direction: column; gap: 22px; }
+  .data-subview.active { display: flex; }
+
+  /* ---------- Ring ---------- */
+  .ring-wrap {
+    position: relative;
+    width: 264px;
+    height: 264px;
+    margin: 0 auto;
+  }
+
+  .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+  .ring-track {
+    fill: none;
+    stroke: rgba(74,46,19,0.10);
+    stroke-width: 7;
+  }
+
+  .ring-progress {
+    fill: none;
+    stroke: var(--ink-mid);
+    stroke-width: 7;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1), stroke 0.6s ease;
+    filter: none;
+  }
+
+  .ring-progress.achieved { stroke: var(--ink); }
+
+  .ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .elapsed {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 44px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    color: var(--text);
+    text-shadow: none;
+  }
+
+  .elapsed-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .status-msg {
+    margin-top: 8px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    max-width: 170px;
+    line-height: 1.5;
+  }
+
+  .status-msg.achieved { color: var(--ink); }
+
+  /* ---------- Record button ---------- */
+  .record-btn {
+    appearance: none;
+    border: 1px solid var(--ink);
+    width: 100%;
+    padding: 18px;
+    border-radius: 4px;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-size: 15.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 10px 20px -10px var(--ink-shadow);
+  }
+
+  .record-btn:active { transform: scale(0.97); }
+
+  .wake-btn {
+    appearance: none;
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.25s ease, color 0.25s ease;
+  }
+
+  .wake-btn:active { transform: scale(0.97); }
+  .wake-btn:hover { background: var(--ink); color: var(--bg); }
+
+  .sub-actions {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .undo-link {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    padding: 6px 10px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(74,46,19,0.25);
+  }
+
+  .undo-link:hover { color: var(--text-muted); }
+
+  .add-time-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 12px;
+    background: rgba(74,46,19,0.04);
+    border-radius: 3px;
+    flex-wrap: wrap;
+  }
+
+  .add-time-input {
+    flex: 1;
+    min-width: 160px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 8px 10px;
+  }
+
+  .add-time-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .add-time-confirm {
+    appearance: none;
+    border: none;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  .add-time-cancel {
+    appearance: none;
+    border: 1px solid var(--panel-line);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-size: 12.5px;
+    padding: 8px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  /* ---------- Panels ---------- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 18px 20px 14px;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .panel-title {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .panel-count {
+    font-family: 'IBM Plex Mono', sans-serif;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  .panel-count b {
+    color: var(--text);
+    font-size: 15px;
+  }
+
+  .log-list {
+    list-style: none;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .log-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--panel-line);
+    font-size: 13.5px;
+  }
+
+  .log-row:last-child { border-bottom: none; }
+
+  .log-time {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+
+  .log-gap {
+    color: var(--text-faint);
+    font-size: 12px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 22px 8px 18px;
+    color: var(--text-faint);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ---------- Range toggle (data view) ---------- */
+  .range-toggle {
+    display: flex;
+    gap: 6px;
+  }
+
+  .range-btn {
+    appearance: none;
+    border: 1px solid rgba(74,46,19,0.16);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .range-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+  }
+
+  /* ---------- Bar chart ---------- */
+  .bar-chart {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    height: 120px;
+    padding-top: 6px;
+  }
+
+  .bar-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .bar-track {
+    flex: 1;
+    min-height: 0;
+    overflow-x: visible;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .bar-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  .bar-fill {
+    width: 100%;
+    max-width: 22px;
+    background: var(--ink);
+    border-radius: 2px 2px 1px 1px;
+    min-height: 3px;
+    transition: height 0.5s ease;
+  }
+
+  .bar-label {
+    height: 14px;
+    margin-top: 8px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-faint);
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  /* ---------- Hour-of-day list (horizontal bars) ---------- */
+  .hist-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hist-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+  }
+
+  .hist-label {
+    width: 68px;
+    flex-shrink: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .hist-track {
+    flex: 1;
+    height: 9px;
+    background: rgba(74,46,19,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .hist-fill {
+    height: 100%;
+    background: var(--ink);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .hist-value {
+    width: 22px;
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  /* ---------- Weekly timeline ---------- */
+  .timeline-day {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--panel-line);
+  }
+
+  .timeline-day:last-child { border-bottom: none; }
+
+  .timeline-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .timeline-head b { color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+
+  .timeline-track {
+    position: relative;
+    height: 14px;
+    background: rgba(74,46,19,0.07);
+    border-radius: 3px;
+    margin-bottom: 6px;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink);
+    transform: translate(-50%, -50%);
+    border: 1.5px solid var(--panel);
+  }
+
+  .timeline-dot.wake {
+    background: var(--wake);
+    border: 1.5px solid var(--panel);
+    box-sizing: border-box;
+  }
+
+  .timeline-times {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    line-height: 1.6;
+  }
+
+  .time-wake {
+    color: var(--wake);
+  }
+
+  .empty-state.small { padding: 12px 0; }
+
+  /* ---------- Money panel ---------- */
+  .money-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .money-row.three {
+    gap: 8px;
+  }
+
+  .money-row.three .money-item {
+    padding: 12px 10px 10px;
+  }
+
+  .money-row.three .money-label {
+    font-size: 11px;
+  }
+
+  .money-row.three .money-value {
+    font-size: 17px;
+  }
+
+  .money-item {
+    flex: 1;
+    background: rgba(74,46,19,0.04);
+    border-radius: 3px;
+    padding: 14px 14px 12px;
+  }
+
+  .money-label {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .money-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .money-unit {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 3px;
+  }
+
+  /* ---------- Settings panel ---------- */
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--panel-line);
+  }
+
+  .settings-row:last-of-type { border-bottom: none; }
+
+  .settings-label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .settings-input {
+    width: 96px;
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    background: rgba(74,46,19,0.04);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 6px 10px;
+  }
+
+  .settings-save-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .settings-save-btn {
+    appearance: none;
+    border: none;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .settings-saved-msg {
+    font-size: 12px;
+    color: var(--text-faint);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .settings-saved-msg.show { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ring-progress, .record-btn, .bar-fill { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header>
+    <div class="mark" id="mark">LAST DRAG</div>
+    <div class="tagline">&gt; 次の一服までの、ひと呼吸。_</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="record">記録</button>
+    <button class="tab-btn" data-view="data">データ</button>
+  </nav>
+
+  <!-- ============ 記録タブ ============ -->
+  <section class="view active" id="view-record">
+
+    <div class="ring-wrap">
+      <svg viewBox="0 0 200 200">
+        <circle class="ring-track" cx="100" cy="100" r="88"></circle>
+        <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="88"
+          stroke-dasharray="553" stroke-dashoffset="553"></circle>
+      </svg>
+      <div class="ring-center">
+        <div class="elapsed" id="elapsedText">--:--</div>
+        <div class="elapsed-label" id="elapsedLabel">記録なし</div>
+        <div class="status-msg" id="statusMsg">下のボタンで最初の記録をつけましょう</div>
+      </div>
+    </div>
+
+    <div>
+      <button class="record-btn" id="recordBtn">吸った時刻を記録する</button>
+      <button class="wake-btn" id="wakeBtn" style="display:none;">おはよう(ここからやり直す)</button>
+      <div class="sub-actions">
+        <button class="undo-link" id="undoBtn" style="display:none;">直前の記録を取り消す</button>
+        <button class="undo-link" id="undoWakeBtn" style="display:none;">おはようを取り消す</button>
+        <button class="undo-link" id="addTimeToggle">押し忘れた時刻を追加</button>
+      </div>
+      <div class="add-time-form" id="addTimeForm" style="display:none;">
+        <input class="add-time-input" type="datetime-local" id="addTimeInput">
+        <div class="add-time-actions">
+          <button class="add-time-confirm" id="addTimeConfirm">追加する</button>
+          <button class="add-time-cancel" id="addTimeCancel">キャンセル</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">タバコ代</div>
+      </div>
+      <div class="money-row three">
+        <div class="money-item">
+          <div class="money-label">今日</div>
+          <div class="money-value"><span id="moneyToday">0</span><span class="money-unit">円</span></div>
+        </div>
+        <div class="money-item">
+          <div class="money-label">今週</div>
+          <div class="money-value"><span id="moneyWeek">0</span><span class="money-unit">円</span></div>
+        </div>
+        <div class="money-item">
+          <div class="money-label">今月</div>
+          <div class="money-value"><span id="moneyMonth">0</span><span class="money-unit">円</span></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ データタブ ============ -->
+  <section class="view" id="view-data">
+
+    <div class="range-toggle">
+      <button class="range-btn active" data-subview="week">過去1週間</button>
+      <button class="range-btn" data-subview="month">過去1ヶ月</button>
+      <button class="range-btn" data-subview="settings">設定</button>
+    </div>
+
+    <!-- ---- 過去1週間 ---- -->
+    <div class="data-subview active" id="subview-week">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">本数の推移</div>
+          <div class="panel-count"><b id="weekRangeTotal">0</b> 本合計 / <b id="weekRangeCost">0</b>円</div>
+        </div>
+        <div class="bar-chart" id="weekBarChart"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">過去7日間の時刻</div>
+        </div>
+        <div id="weekTimeline"></div>
+        <div class="empty-state small" id="weekEmpty" style="display:none;">この期間の記録はありません</div>
+      </div>
+    </div>
+
+    <!-- ---- 過去1ヶ月 ---- -->
+    <div class="data-subview" id="subview-month">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">本数の推移</div>
+          <div class="panel-count"><b id="monthRangeTotal">0</b> 本合計 / <b id="monthRangeCost">0</b>円</div>
+        </div>
+        <div class="bar-chart" id="monthBarChart"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">よく吸う時間帯</div>
+        </div>
+        <div class="hist-list" id="histChart"></div>
+      </div>
+    </div>
+
+    <!-- ---- 設定 ---- -->
+    <div class="data-subview" id="subview-settings">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">設定</div>
+        </div>
+        <div class="settings-row">
+          <label class="settings-label" for="goalMinutesInput">目標時間(分)</label>
+          <input class="settings-input" type="number" id="goalMinutesInput" min="1" step="1">
+        </div>
+        <div class="settings-row">
+          <label class="settings-label" for="packPriceInput">1箱の値段(円)</label>
+          <input class="settings-input" type="number" id="packPriceInput" min="0" step="10">
+        </div>
+        <div class="settings-row">
+          <label class="settings-label" for="packCountInput">1箱の本数</label>
+          <input class="settings-input" type="number" id="packCountInput" min="1" step="1">
+        </div>
+        <div class="settings-row">
+          <label class="settings-label" for="wakeThresholdInput">起床判定の間隔(時間)</label>
+          <input class="settings-input" type="number" id="wakeThresholdInput" min="1" step="1">
+        </div>
+        <div class="settings-row">
+          <label class="settings-label" for="wakeGoalMinutesInput">起床後の目標時間(分)</label>
+          <input class="settings-input" type="number" id="wakeGoalMinutesInput" min="1" step="1">
+        </div>
+        <div class="settings-save-row">
+          <button class="settings-save-btn" id="saveSettingsBtn">保存する</button>
+          <span class="settings-saved-msg" id="settingsSavedMsg">保存しました</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'ma-smoke-log-v1';
+  const SETTINGS_KEY = 'ma-settings-v1';
+  const WAKE_CHECKIN_KEY = 'ma-wake-checkin-v1';
+  const RETENTION_DAYS = 30;             // データ保持期間
+  const RING_CIRCUMFERENCE = 2 * Math.PI * 88;
+
+  const DEFAULT_SETTINGS = {
+    goalMinutes: 60,
+    packPrice: 600,
+    packCount: 20,
+    wakeThresholdHours: 4,
+    wakeGoalMinutes: 60,
+  };
+
+  const el = {
+    mark: document.getElementById('mark'),
+    ring: document.getElementById('ringProgress'),
+    elapsedText: document.getElementById('elapsedText'),
+    elapsedLabel: document.getElementById('elapsedLabel'),
+    statusMsg: document.getElementById('statusMsg'),
+    recordBtn: document.getElementById('recordBtn'),
+    undoBtn: document.getElementById('undoBtn'),
+    addTimeToggle: document.getElementById('addTimeToggle'),
+    addTimeForm: document.getElementById('addTimeForm'),
+    addTimeInput: document.getElementById('addTimeInput'),
+    addTimeConfirm: document.getElementById('addTimeConfirm'),
+    addTimeCancel: document.getElementById('addTimeCancel'),
+    wakeBtn: document.getElementById('wakeBtn'),
+    undoWakeBtn: document.getElementById('undoWakeBtn'),
+    moneyToday: document.getElementById('moneyToday'),
+    moneyWeek: document.getElementById('moneyWeek'),
+    moneyMonth: document.getElementById('moneyMonth'),
+    tabs: document.querySelectorAll('.tab-btn'),
+    views: document.querySelectorAll('.view'),
+    subTabs: document.querySelectorAll('.range-btn'),
+    subviews: document.querySelectorAll('.data-subview'),
+    weekRangeTotal: document.getElementById('weekRangeTotal'),
+    weekRangeCost: document.getElementById('weekRangeCost'),
+    monthRangeTotal: document.getElementById('monthRangeTotal'),
+    monthRangeCost: document.getElementById('monthRangeCost'),
+    weekBarChart: document.getElementById('weekBarChart'),
+    monthBarChart: document.getElementById('monthBarChart'),
+    histChart: document.getElementById('histChart'),
+    weekTimeline: document.getElementById('weekTimeline'),
+    weekEmpty: document.getElementById('weekEmpty'),
+    goalMinutesInput: document.getElementById('goalMinutesInput'),
+    packPriceInput: document.getElementById('packPriceInput'),
+    packCountInput: document.getElementById('packCountInput'),
+    wakeThresholdInput: document.getElementById('wakeThresholdInput'),
+    wakeGoalMinutesInput: document.getElementById('wakeGoalMinutesInput'),
+    saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+    settingsSavedMsg: document.getElementById('settingsSavedMsg'),
+  };
+
+  el.ring.style.strokeDasharray = RING_CIRCUMFERENCE;
+
+  let currentDataSubview = 'week';
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return { ...DEFAULT_SETTINGS, ...parsed };
+    } catch (e) {
+      return { ...DEFAULT_SETTINGS };
+    }
+  }
+
+  function saveSettings(s) {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  }
+
+  let settings = loadSettings();
+
+  function loadLog() {
+    let data = [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      data = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      data = [];
+    }
+    const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    const pruned = data.filter(ts => ts >= cutoff);
+    if (pruned.length !== data.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+    }
+    return pruned;
+  }
+
+  function saveLog(log) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+  }
+
+  let log = loadLog();
+
+  function loadWakeLog() {
+    let data = [];
+    try {
+      const raw = localStorage.getItem(WAKE_CHECKIN_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      // 旧バージョン(単一の数値文字列)からの移行
+      data = Array.isArray(parsed) ? parsed : (typeof parsed === 'number' ? [parsed] : []);
+    } catch (e) {
+      data = [];
+    }
+    const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    const pruned = data.filter(ts => ts >= cutoff);
+    if (pruned.length !== data.length) {
+      localStorage.setItem(WAKE_CHECKIN_KEY, JSON.stringify(pruned));
+    }
+    return pruned;
+  }
+
+  function saveWakeLog(wakeLog) {
+    localStorage.setItem(WAKE_CHECKIN_KEY, JSON.stringify(wakeLog));
+  }
+
+  let wakeLog = loadWakeLog();
+
+  // 「おはよう」が今も有効な基準点かどうか(その後に喫煙記録があれば無効)
+  function isWakeCheckinActive() {
+    if (wakeLog.length === 0) return false;
+    const lastWake = wakeLog[wakeLog.length - 1];
+    const lastSmoke = log.length > 0 ? log[log.length - 1] : null;
+    return lastSmoke === null || lastWake > lastSmoke;
+  }
+
+  // リングの基準時刻(直近の喫煙 or 有効な「おはよう」のうち新しい方)
+  function getEffectiveLastTs() {
+    const lastSmoke = log.length > 0 ? log[log.length - 1] : null;
+    if (isWakeCheckinActive()) return wakeLog[wakeLog.length - 1];
+    return lastSmoke;
+  }
+
+  function isSameDay(ts, ref) {
+    const a = new Date(ts), b = new Date(ref);
+    return a.getFullYear() === b.getFullYear() &&
+           a.getMonth() === b.getMonth() &&
+           a.getDate() === b.getDate();
+  }
+
+  function formatClock(ts) {
+    const d = new Date(ts);
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  }
+
+  function formatForDatetimeInput(ts) {
+    const d = new Date(ts);
+    const pad = n => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function formatShortDate(ts) {
+    const d = new Date(ts);
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+  }
+
+  function formatWeekday(ts) {
+    return ['日','月','火','水','木','金','土'][new Date(ts).getDay()];
+  }
+
+  function formatElapsed(ms) {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+    return `${m}:${s.toString().padStart(2,'0')}`;
+  }
+
+  function statusFor(ms, goalMs) {
+    const min = ms / 60000;
+    const goalMin = goalMs / 60000;
+    if (min >= goalMin) return { msg: `${goalMin}分達成。よくがんばりました 🎉`, achieved: true };
+    if (min >= goalMin * 0.75) return { msg: 'あと少し。ここが一番の踏ん張りどころ', achieved: false };
+    if (min >= goalMin * 0.25) return { msg: '順調です。このまま伸ばしていきましょう', achieved: false };
+    return { msg: 'まずはここから。深呼吸してみましょう', achieved: false };
+  }
+
+  // ---------- 週/月の起点 ----------
+
+  function startOfDay(ref) {
+    const d = new Date(ref);
+    d.setHours(0,0,0,0);
+    return d.getTime();
+  }
+
+  function startOfWeekMonday(ref) {
+    const d = new Date(ref);
+    d.setHours(0,0,0,0);
+    const day = d.getDay(); // 0=Sun ... 6=Sat
+    const diff = (day === 0 ? -6 : 1) - day; // Mondayまで戻る日数
+    d.setDate(d.getDate() + diff);
+    return d.getTime();
+  }
+
+  function startOfMonth(ref) {
+    const d = new Date(ref);
+    d.setHours(0,0,0,0);
+    d.setDate(1);
+    return d.getTime();
+  }
+
+  // ---------- 記録タブ ----------
+
+  function renderMoneyPanel() {
+    const perCigarette = settings.packCount > 0 ? settings.packPrice / settings.packCount : 0;
+
+    const todayStart = startOfDay(Date.now());
+    const weekStart = startOfWeekMonday(Date.now());
+    const monthStart = startOfMonth(Date.now());
+
+    const todayCount = log.filter(ts => ts >= todayStart).length;
+    const weekCount = log.filter(ts => ts >= weekStart).length;
+    const monthCount = log.filter(ts => ts >= monthStart).length;
+
+    el.moneyToday.textContent = Math.round(todayCount * perCigarette).toLocaleString();
+    el.moneyWeek.textContent = Math.round(weekCount * perCigarette).toLocaleString();
+    el.moneyMonth.textContent = Math.round(monthCount * perCigarette).toLocaleString();
+  }
+
+  function tick() {
+    const usingWakeGoal = isWakeCheckinActive();
+    const goalMs = (usingWakeGoal ? settings.wakeGoalMinutes : settings.goalMinutes) * 60 * 1000;
+    const wakeThresholdMs = settings.wakeThresholdHours * 60 * 60 * 1000;
+    const last = getEffectiveLastTs();
+
+    if (last === null) {
+      el.elapsedText.textContent = '--:--';
+      el.elapsedLabel.textContent = '記録なし';
+      el.statusMsg.textContent = '下のボタンで最初の記録をつけましょう';
+      el.statusMsg.classList.remove('achieved');
+      el.mark.classList.remove('achieved');
+      el.ring.classList.remove('achieved');
+      el.ring.style.strokeDashoffset = RING_CIRCUMFERENCE;
+      el.wakeBtn.style.display = 'block';
+      el.undoWakeBtn.style.display = 'none';
+      return;
+    }
+
+    const elapsedMs = Date.now() - last;
+    const progress = Math.min(elapsedMs / goalMs, 1);
+    const offset = RING_CIRCUMFERENCE * (1 - progress);
+    el.ring.style.strokeDashoffset = offset;
+
+    el.elapsedText.textContent = formatElapsed(elapsedMs);
+    el.elapsedLabel.textContent = elapsedMs >= goalMs ? '目標達成後の経過' : '経過時間';
+
+    const status = statusFor(elapsedMs, goalMs);
+    el.statusMsg.textContent = status.msg;
+    el.statusMsg.classList.toggle('achieved', status.achieved);
+    el.mark.classList.toggle('achieved', status.achieved);
+    el.ring.classList.toggle('achieved', status.achieved);
+
+    el.wakeBtn.style.display = (!usingWakeGoal && elapsedMs >= wakeThresholdMs) ? 'block' : 'none';
+    el.undoWakeBtn.style.display = isWakeCheckinActive() ? 'inline-block' : 'none';
+  }
+
+  // ---------- データタブ:共通バーチャート描画 ----------
+
+  function renderBarChart(container, totalEl, costEl, rangeDays) {
+    const days = [];
+    for (let i = rangeDays - 1; i >= 0; i--) {
+      days.push(Date.now() - i * 24 * 60 * 60 * 1000);
+    }
+    const counts = days.map(ts => log.filter(l => isSameDay(l, ts)).length);
+    const max = Math.max(1, ...counts);
+    const total = counts.reduce((a,b) => a+b, 0);
+    totalEl.textContent = total;
+
+    const perCigarette = settings.packCount > 0 ? settings.packPrice / settings.packCount : 0;
+    costEl.textContent = Math.round(total * perCigarette).toLocaleString();
+
+    const showEveryLabel = rangeDays <= 7;
+    container.innerHTML = days.map((ts, i) => {
+      const h = Math.round((counts[i] / max) * 62) + 4;
+      const label = showEveryLabel ? formatWeekday(ts) : (i % 5 === 0 ? formatShortDate(ts) : '');
+      const valueText = showEveryLabel && counts[i] > 0 ? counts[i] : '';
+      return `<div class="bar-col">
+        <div class="bar-track">
+          <div class="bar-value">${valueText}</div>
+          <div class="bar-fill" style="height:${h}px;"></div>
+        </div>
+        <div class="bar-label">${label}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderHistChart() {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const inRange = log.filter(ts => ts >= cutoff);
+    const counts = new Array(24).fill(0);
+    inRange.forEach(ts => { counts[new Date(ts).getHours()]++; });
+    const max = Math.max(1, ...counts);
+
+    el.histChart.innerHTML = counts.map((c, hour) => {
+      const pct = Math.round((c / max) * 100);
+      const label = `${hour}時〜${hour + 1}時`;
+      return `<div class="hist-row">
+        <div class="hist-label">${label}</div>
+        <div class="hist-track"><div class="hist-fill" style="width:${pct}%;"></div></div>
+        <div class="hist-value">${c}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderWeekTimeline() {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      days.push(Date.now() - i * 24 * 60 * 60 * 1000);
+    }
+    const rows = days.map(dayTs => {
+      const smokeEntries = log.filter(ts => isSameDay(ts, dayTs)).map(ts => ({ ts, type: 'smoke' }));
+      const wakeEntries = wakeLog.filter(ts => isSameDay(ts, dayTs)).map(ts => ({ ts, type: 'wake' }));
+      const entries = smokeEntries.concat(wakeEntries).sort((a, b) => a.ts - b.ts);
+      if (entries.length === 0) return null;
+
+      const dots = entries.map(e => {
+        const d = new Date(e.ts);
+        const pct = ((d.getHours() * 60 + d.getMinutes()) / (24 * 60)) * 100;
+        const dotClass = e.type === 'wake' ? 'timeline-dot wake' : 'timeline-dot';
+        return `<div class="${dotClass}" style="left:${pct}%;"></div>`;
+      }).join('');
+
+      const times = entries.map(e => {
+        return e.type === 'wake'
+          ? `<span class="time-wake">${formatClock(e.ts)}(起床)</span>`
+          : formatClock(e.ts);
+      }).join('  ');
+
+      return `<div class="timeline-day">
+        <div class="timeline-head">
+          <span>${formatShortDate(dayTs)}(${formatWeekday(dayTs)})</span>
+          <span><b>${smokeEntries.length}</b> 回</span>
+        </div>
+        <div class="timeline-track">${dots}</div>
+        <div class="timeline-times">${times}</div>
+      </div>`;
+    }).filter(Boolean);
+
+    if (rows.length === 0) {
+      el.weekTimeline.innerHTML = '';
+      el.weekEmpty.style.display = 'block';
+    } else {
+      el.weekEmpty.style.display = 'none';
+      el.weekTimeline.innerHTML = rows.join('');
+    }
+  }
+
+  function renderSettingsForm() {
+    el.goalMinutesInput.value = settings.goalMinutes;
+    el.packPriceInput.value = settings.packPrice;
+    el.packCountInput.value = settings.packCount;
+    el.wakeThresholdInput.value = settings.wakeThresholdHours;
+    el.wakeGoalMinutesInput.value = settings.wakeGoalMinutes;
+  }
+
+  function renderWeekSubview() {
+    renderBarChart(el.weekBarChart, el.weekRangeTotal, el.weekRangeCost, 7);
+    renderWeekTimeline();
+  }
+
+  function renderMonthSubview() {
+    renderBarChart(el.monthBarChart, el.monthRangeTotal, el.monthRangeCost, 30);
+    renderHistChart();
+  }
+
+  function renderDataSubview() {
+    if (currentDataSubview === 'week') renderWeekSubview();
+    else if (currentDataSubview === 'month') renderMonthSubview();
+    // settingsは静的フォームなので再描画不要(保存時のみ更新)
+  }
+
+  // ---------- 共通 ----------
+
+  function render() {
+    tick();
+    renderMoneyPanel();
+    renderDataSubview();
+    el.undoBtn.style.display = log.length > 0 ? 'inline-block' : 'none';
+  }
+
+  el.recordBtn.addEventListener('click', () => {
+    log.push(Date.now());
+    saveLog(log);
+    render();
+  });
+
+  el.undoBtn.addEventListener('click', () => {
+    if (log.length === 0) return;
+    log.pop();
+    saveLog(log);
+    render();
+  });
+
+  el.wakeBtn.addEventListener('click', () => {
+    wakeLog.push(Date.now());
+    saveWakeLog(wakeLog);
+    render();
+  });
+
+  el.undoWakeBtn.addEventListener('click', () => {
+    if (wakeLog.length === 0) return;
+    wakeLog.pop();
+    saveWakeLog(wakeLog);
+    render();
+  });
+
+  el.addTimeToggle.addEventListener('click', () => {
+    const isHidden = el.addTimeForm.style.display === 'none';
+    if (isHidden) {
+      el.addTimeInput.value = formatForDatetimeInput(Date.now());
+      el.addTimeForm.style.display = 'flex';
+    } else {
+      el.addTimeForm.style.display = 'none';
+    }
+  });
+
+  el.addTimeCancel.addEventListener('click', () => {
+    el.addTimeForm.style.display = 'none';
+  });
+
+  el.addTimeConfirm.addEventListener('click', () => {
+    const value = el.addTimeInput.value;
+    if (!value) return;
+    const ts = new Date(value).getTime();
+    if (isNaN(ts)) return;
+    if (ts > Date.now()) {
+      alert('未来の時刻は記録できません');
+      return;
+    }
+    log.push(ts);
+    log.sort((a, b) => a - b);
+    saveLog(log);
+    el.addTimeForm.style.display = 'none';
+    render();
+  });
+
+  el.tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.tabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const target = btn.dataset.view;
+      el.views.forEach(v => v.classList.toggle('active', v.id === `view-${target}`));
+      if (target === 'data') renderDataSubview();
+    });
+  });
+
+  el.subTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.subTabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDataSubview = btn.dataset.subview;
+      el.subviews.forEach(v => v.classList.toggle('active', v.id === `subview-${currentDataSubview}`));
+      renderDataSubview();
+    });
+  });
+
+  el.saveSettingsBtn.addEventListener('click', () => {
+    const goalMinutes = Math.max(1, parseInt(el.goalMinutesInput.value, 10) || DEFAULT_SETTINGS.goalMinutes);
+    const packPrice = Math.max(0, parseInt(el.packPriceInput.value, 10) || 0);
+    const packCount = Math.max(1, parseInt(el.packCountInput.value, 10) || DEFAULT_SETTINGS.packCount);
+    const wakeThresholdHours = Math.max(1, parseInt(el.wakeThresholdInput.value, 10) || DEFAULT_SETTINGS.wakeThresholdHours);
+    const wakeGoalMinutes = Math.max(1, parseInt(el.wakeGoalMinutesInput.value, 10) || DEFAULT_SETTINGS.wakeGoalMinutes);
+
+    settings = { goalMinutes, packPrice, packCount, wakeThresholdHours, wakeGoalMinutes };
+    saveSettings(settings);
+    renderSettingsForm();
+    tick();
+    renderMoneyPanel();
+    renderDataSubview();
+
+    el.settingsSavedMsg.classList.add('show');
+    setTimeout(() => el.settingsSavedMsg.classList.remove('show'), 1800);
+  });
+
+  renderSettingsForm();
+  setInterval(tick, 1000);
+  render();
+</script>
+
+</body>
+</html>
