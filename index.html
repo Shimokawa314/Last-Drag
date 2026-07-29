@@ -2,17 +2,18 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>LAST DRAG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Last Drag</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="LAST DRAG">
+<meta name="apple-mobile-web-app-title" content="Last Drag">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#F3E7CE">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
@@ -171,6 +172,7 @@
     line-height: 1;
     color: var(--text);
     text-shadow: none;
+    transition: font-size 0.2s ease;
   }
 
   .elapsed-label {
@@ -1043,6 +1045,17 @@
     el.moneyMonth.textContent = Math.round(monthCount * perCigarette).toLocaleString();
   }
 
+  function setElapsedText(text) {
+    el.elapsedText.textContent = text;
+    const len = text.length;
+    let size;
+    if (len <= 5) size = 44;
+    else if (len <= 7) size = 36;
+    else if (len <= 9) size = 29;
+    else size = 24;
+    el.elapsedText.style.fontSize = size + 'px';
+  }
+
   function tick() {
     const usingWakeGoal = isWakeCheckinActive();
     const goalMs = (usingWakeGoal ? settings.wakeGoalMinutes : settings.goalMinutes) * 60 * 1000;
@@ -1050,7 +1063,7 @@
     const last = getEffectiveLastTs();
 
     if (last === null) {
-      el.elapsedText.textContent = '--:--';
+      setElapsedText('--:--');
       el.elapsedLabel.textContent = '記録なし';
       el.statusMsg.textContent = '下のボタンで最初の記録をつけましょう';
       el.statusMsg.classList.remove('achieved');
@@ -1067,7 +1080,7 @@
     const offset = RING_CIRCUMFERENCE * (1 - progress);
     el.ring.style.strokeDashoffset = offset;
 
-    el.elapsedText.textContent = formatElapsed(elapsedMs);
+    setElapsedText(formatElapsed(elapsedMs));
     el.elapsedLabel.textContent = elapsedMs >= goalMs ? '目標達成後の経過' : '経過時間';
 
     const status = statusFor(elapsedMs, goalMs);
