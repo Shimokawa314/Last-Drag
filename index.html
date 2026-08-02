@@ -674,7 +674,7 @@
 
   <header>
     <div class="mark" id="mark">LAST DRAG</div>
-    <div class="tagline">&gt; 次の一服までの、ひと呼吸。_</div>
+    <div class="tagline" id="tagline">&gt; 次の一服までの、ひと呼吸。_</div>
   </header>
 
   <nav class="tabs">
@@ -837,6 +837,7 @@
 
   const el = {
     mark: document.getElementById('mark'),
+    tagline: document.getElementById('tagline'),
     ring: document.getElementById('ringProgress'),
     elapsedText: document.getElementById('elapsedText'),
     elapsedLabel: document.getElementById('elapsedLabel'),
@@ -994,13 +995,67 @@
     return `${m}:${s.toString().padStart(2,'0')}`;
   }
 
+  const STATUS_MESSAGES = {
+    t0: [
+      '最初の数分は、いつだって一番長い。',
+      '灰皿は逃げない。',
+      '深呼吸。酸素は無料だ。',
+      'その一本、少し待たせてみよう。',
+      '一歩ずつ進めば十分だ。',
+    ],
+    t25: [
+      '灰皿も今日は少し休憩だ。',
+      '一本減らすより、一本遅らせる。',
+      '今日の記録は着実に伸びている。',
+      '我慢というより、少し待つだけだ。',
+      '今日は時計のほうが少し速いようだ。',
+    ],
+    t50: [
+      'タバコは待てる。時間は戻らない。',
+      '時計は着実に進んでいる。',
+      'その一本、もう少し待ってもらおう。',
+      '今日の努力が形になってきた。',
+      'ここを越えれば景色が変わる。',
+    ],
+    t75: [
+      'あと少し。灰皿も待ちくたびれている。',
+      '今日くらい、灰皿を退屈させてやろう。',
+      '最後の数分は、意外と短い。',
+      'ゴールは目前だ。慌てる理由はない。',
+      'ここから先は、自分との約束だ。',
+    ],
+    achieved: [
+      'よくやった。灰皿の負けだ。',
+      '今日の一本は、未来へ延期された。',
+      '時計は約束を守った。',
+      '今日の記録は、明日の自信になる。',
+      'また一つ、生き延びた。',
+    ],
+  };
+
+  let currentStatusTier = null;
+  let currentStatusMsg = '';
+
+  function tierFor(min, goalMin) {
+    if (min >= goalMin) return 'achieved';
+    if (min >= goalMin * 0.75) return 't75';
+    if (min >= goalMin * 0.5) return 't50';
+    if (min >= goalMin * 0.25) return 't25';
+    return 't0';
+  }
+
   function statusFor(ms, goalMs) {
     const min = ms / 60000;
     const goalMin = goalMs / 60000;
-    if (min >= goalMin) return { msg: `${goalMin}分達成。よくがんばりました 🎉`, achieved: true };
-    if (min >= goalMin * 0.75) return { msg: 'あと少し。ここが一番の踏ん張りどころ', achieved: false };
-    if (min >= goalMin * 0.25) return { msg: '順調です。このまま伸ばしていきましょう', achieved: false };
-    return { msg: 'まずはここから。深呼吸してみましょう', achieved: false };
+    const tier = tierFor(min, goalMin);
+
+    if (tier !== currentStatusTier) {
+      currentStatusTier = tier;
+      const list = STATUS_MESSAGES[tier];
+      currentStatusMsg = list[Math.floor(Math.random() * list.length)];
+    }
+
+    return { msg: currentStatusMsg, achieved: tier === 'achieved' };
   }
 
   // ---------- 週/月の起点 ----------
@@ -1056,11 +1111,18 @@
     el.elapsedText.style.fontSize = size + 'px';
   }
 
+  let lastKnownRefTs = undefined;
+
   function tick() {
     const usingWakeGoal = isWakeCheckinActive();
     const goalMs = (usingWakeGoal ? settings.wakeGoalMinutes : settings.goalMinutes) * 60 * 1000;
     const wakeThresholdMs = settings.wakeThresholdHours * 60 * 60 * 1000;
     const last = getEffectiveLastTs();
+
+    if (last !== lastKnownRefTs) {
+      lastKnownRefTs = last;
+      currentStatusTier = null; // 基準時刻が変わったら、メッセージを引き直す
+    }
 
     if (last === null) {
       setElapsedText('--:--');
@@ -1311,6 +1373,37 @@
     setTimeout(() => el.settingsSavedMsg.classList.remove('show'), 1800);
   });
 
+  const TAGLINE_MESSAGES = [
+    'タバコは、逃げない',
+    '今日も一本、未来へ送ろう',
+    '待つことも、生き残る技術',
+    '灰皿は、いつでもそこにある',
+    'その一本は、あとでも吸える',
+    '一本くらいで世界は救えない',
+    'タバコは今日も「今すぐ」と言っている',
+    '一本吸っても、明日は早く来ない',
+    'タバコは待てない。あなたは待てる',
+    '一本吸っても、灰が増えるだけ',
+    '灰皿は、今日も客を待っている',
+    '一本の価値は、吸う前が一番高い',
+    '灰皿は、今日も空席を用意している',
+    '今日くらい、灰皿を退屈させてやろう',
+    '一本くらい、待たせても文句は出ない',
+    '焦るのは、いつも火が付く前',
+    '灰になるのは、一瞬',
+    '煙は風に消える。記録は残る',
+    '火を点けるのは一瞬。待つのは技術だ',
+    '灰皿は、逃げも隠れもしない',
+    '灰皿にも、休暇は必要だ',
+    '灰だけが増える日は、今日じゃない',
+  ];
+
+  function renderTagline() {
+    const msg = TAGLINE_MESSAGES[Math.floor(Math.random() * TAGLINE_MESSAGES.length)];
+    el.tagline.textContent = `> ${msg}_`;
+  }
+
+  renderTagline();
   renderSettingsForm();
   setInterval(tick, 1000);
   render();
