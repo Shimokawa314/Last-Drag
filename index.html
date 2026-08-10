@@ -34,8 +34,11 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html, body {
+  html {
     height: 100%;
+  }
+
+  html, body {
     background: var(--bg);
     color: var(--text);
     font-family: 'IBM Plex Sans JP', sans-serif;
@@ -48,6 +51,7 @@
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
+    min-height: 100dvh;
     padding: max(72px, env(safe-area-inset-top) + 40px) 20px max(80px, env(safe-area-inset-bottom) + 60px);
     background:
       radial-gradient(ellipse at 50% 0%, rgba(74,46,19,0.05), transparent 60%),
@@ -828,7 +832,7 @@
       <div class="panel">
         <div class="panel-head">
           <div class="panel-title">過去7日間の時刻</div>
-          <div class="panel-count">中央値(全データ) <b id="weekMedianInterval">--</b></div>
+          <div class="panel-count">中央値(過去30日) <b id="weekMedianInterval">--</b></div>
         </div>
         <div id="weekTimeline"></div>
         <div class="empty-state small" id="weekEmpty" style="display:none;">この期間の記録はありません</div>
