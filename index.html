@@ -606,6 +606,49 @@
     margin-left: 3px;
   }
 
+  /* ---------- Streak panel ---------- */
+  .streak-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .streak-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .streak-unit {
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-left: 4px;
+  }
+
+  .streak-sub {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .streak-over {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--bg);
+    background: var(--ink);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
   /* ---------- Settings panel ---------- */
   .settings-row {
     display: flex;
@@ -735,6 +778,17 @@
       </div>
     </div>
 
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">連続記録</div>
+      </div>
+      <div class="streak-row">
+        <div class="streak-value"><span id="streakDays">--</span><span class="streak-unit">日連続</span></div>
+        <div class="streak-sub">中央値 <span id="streakLevel">--</span>分<span class="streak-over" id="streakOverBadge" style="display:none;">OVER</span></div>
+      </div>
+      <div class="empty-state small" id="streakEmpty" style="display:none;">まだ記録が足りません(1日分の記録が完了すると表示されます)</div>
+    </div>
+
   </section>
 
   <!-- ============ データタブ ============ -->
@@ -759,6 +813,7 @@
       <div class="panel">
         <div class="panel-head">
           <div class="panel-title">過去7日間の時刻</div>
+          <div class="panel-count">間隔の中央値 <b id="weekMedianInterval">--</b></div>
         </div>
         <div id="weekTimeline"></div>
         <div class="empty-state small" id="weekEmpty" style="display:none;">この期間の記録はありません</div>
@@ -824,6 +879,7 @@
   const STORAGE_KEY = 'ma-smoke-log-v1';
   const SETTINGS_KEY = 'ma-settings-v1';
   const WAKE_CHECKIN_KEY = 'ma-wake-checkin-v1';
+  const STREAK_BEST_KEY = 'ma-streak-best-v1';
   const RETENTION_DAYS = 30;             // データ保持期間
   const RING_CIRCUMFERENCE = 2 * Math.PI * 88;
 
@@ -854,6 +910,10 @@
     moneyToday: document.getElementById('moneyToday'),
     moneyWeek: document.getElementById('moneyWeek'),
     moneyMonth: document.getElementById('moneyMonth'),
+    streakDays: document.getElementById('streakDays'),
+    streakLevel: document.getElementById('streakLevel'),
+    streakOverBadge: document.getElementById('streakOverBadge'),
+    streakEmpty: document.getElementById('streakEmpty'),
     tabs: document.querySelectorAll('.tab-btn'),
     views: document.querySelectorAll('.view'),
     subTabs: document.querySelectorAll('.range-btn'),
@@ -867,6 +927,7 @@
     histChart: document.getElementById('histChart'),
     weekTimeline: document.getElementById('weekTimeline'),
     weekEmpty: document.getElementById('weekEmpty'),
+    weekMedianInterval: document.getElementById('weekMedianInterval'),
     goalMinutesInput: document.getElementById('goalMinutesInput'),
     packPriceInput: document.getElementById('packPriceInput'),
     packCountInput: document.getElementById('packCountInput'),
@@ -1203,7 +1264,113 @@
     }).join('');
   }
 
+  function formatDurationHM(ms) {
+    const totalMin = Math.round(ms / 60000);
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    if (h > 0) return `${h}時間${m}分`;
+    return `${m}分`;
+  }
+
+  function computeMedianInterval(rangeDays) {
+    const cutoff = Date.now() - rangeDays * 24 * 60 * 60 * 1000;
+    const smokes = log.filter(ts => ts >= cutoff);       // 既に昇順ソート済み
+    const wakes = wakeLog.filter(ts => ts >= cutoff);    // 既に昇順ソート済み
+    return medianOfGaps(smokes, wakes);
+  }
+
+  function medianOfGaps(smokes, wakes) {
+    const gaps = [];
+    for (let i = 1; i < smokes.length; i++) {
+      const prev = smokes[i - 1];
+      const curr = smokes[i];
+      const hasWakeBetween = wakes.some(w => w > prev && w < curr);
+      if (!hasWakeBetween) gaps.push(curr - prev);
+    }
+
+    if (gaps.length === 0) return null;
+
+    gaps.sort((a, b) => a - b);
+    const mid = Math.floor(gaps.length / 2);
+    return gaps.length % 2 === 0
+      ? (gaps[mid - 1] + gaps[mid]) / 2
+      : gaps[mid];
+  }
+
+  // ---------- 連続記録(ストリーク) ----------
+
+  function getDayMedianMinutes(dayStartTs) {
+    const dayEndTs = dayStartTs + 24 * 60 * 60 * 1000;
+    const smokes = log.filter(ts => ts >= dayStartTs && ts < dayEndTs);
+    const wakes = wakeLog.filter(ts => ts >= dayStartTs && ts < dayEndTs);
+    const median = medianOfGaps(smokes, wakes);
+    return median === null ? null : median / 60000;
+  }
+
+  function getDayTier(dayStartTs) {
+    const min = getDayMedianMinutes(dayStartTs);
+    if (min === null) return null;
+    return Math.floor(min / 5) * 5;
+  }
+
+  function loadStreakBest() {
+    const raw = localStorage.getItem(STREAK_BEST_KEY);
+    const n = raw ? parseInt(raw, 10) : 0;
+    return isNaN(n) ? 0 : n;
+  }
+
+  function saveStreakBest(n) {
+    localStorage.setItem(STREAK_BEST_KEY, String(n));
+  }
+
+  function computeStreak() {
+    // 「今日」はまだ完了していないので、直近の完了日(昨日)を基準にする
+    const refDayStart = startOfDay(Date.now() - 24 * 60 * 60 * 1000);
+    const tier = getDayTier(refDayStart);
+    if (tier === null) return null;
+
+    let days = 0;
+    let cursor = refDayStart;
+    let safety = 0;
+    while (safety < 400) {
+      const cursorTier = getDayTier(cursor);
+      if (cursorTier === null || cursorTier < tier) break;
+      days++;
+      cursor -= 24 * 60 * 60 * 1000;
+      safety++;
+    }
+
+    return { level: tier, days };
+  }
+
+  function renderStreak() {
+    const streak = computeStreak();
+
+    if (streak === null) {
+      el.streakDays.textContent = '--';
+      el.streakLevel.textContent = '--';
+      el.streakOverBadge.style.display = 'none';
+      el.streakEmpty.style.display = 'block';
+      return;
+    }
+    el.streakEmpty.style.display = 'none';
+
+    el.streakDays.textContent = streak.days;
+    el.streakLevel.textContent = streak.level;
+
+    const best = loadStreakBest();
+    if (streak.days > best) {
+      saveStreakBest(streak.days);
+      el.streakOverBadge.style.display = 'inline-block';
+    } else {
+      el.streakOverBadge.style.display = 'none';
+    }
+  }
+
   function renderWeekTimeline() {
+    const median = computeMedianInterval(7);
+    el.weekMedianInterval.textContent = median === null ? '--' : formatDurationHM(median);
+
     const days = [];
     for (let i = 0; i < 7; i++) {
       days.push(Date.now() - i * 24 * 60 * 60 * 1000);
@@ -1275,6 +1442,7 @@
   function render() {
     tick();
     renderMoneyPanel();
+    renderStreak();
     renderDataSubview();
     el.undoBtn.style.display = log.length > 0 ? 'inline-block' : 'none';
   }
