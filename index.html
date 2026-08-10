@@ -638,16 +638,30 @@
     gap: 6px;
   }
 
-  .streak-over {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: var(--bg);
-    background: var(--ink);
-    padding: 2px 7px;
-    border-radius: 3px;
+  .streak-milestones {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--panel-line);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
+
+  .streak-milestone-row {
+    font-size: 11px;
+    color: var(--text-faint);
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  .streak-milestone-row b {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
 
   /* ---------- Settings panel ---------- */
   .settings-row {
@@ -784,8 +798,9 @@
       </div>
       <div class="streak-row">
         <div class="streak-value"><span id="streakDays">--</span><span class="streak-unit">日連続</span></div>
-        <div class="streak-sub">中央値 <span id="streakLevel">--</span>分<span class="streak-over" id="streakOverBadge" style="display:none;">OVER</span></div>
+        <div class="streak-sub">中央値 <span id="streakLevel">--</span>分</div>
       </div>
+      <div class="streak-milestones" id="streakMilestones"></div>
       <div class="empty-state small" id="streakEmpty" style="display:none;">まだ記録が足りません(1日分の記録が完了すると表示されます)</div>
     </div>
 
@@ -813,7 +828,7 @@
       <div class="panel">
         <div class="panel-head">
           <div class="panel-title">過去7日間の時刻</div>
-          <div class="panel-count">間隔の中央値 <b id="weekMedianInterval">--</b></div>
+          <div class="panel-count">中央値(全データ) <b id="weekMedianInterval">--</b></div>
         </div>
         <div id="weekTimeline"></div>
         <div class="empty-state small" id="weekEmpty" style="display:none;">この期間の記録はありません</div>
@@ -879,7 +894,6 @@
   const STORAGE_KEY = 'ma-smoke-log-v1';
   const SETTINGS_KEY = 'ma-settings-v1';
   const WAKE_CHECKIN_KEY = 'ma-wake-checkin-v1';
-  const STREAK_BEST_KEY = 'ma-streak-best-v1';
   const RETENTION_DAYS = 30;             // データ保持期間
   const RING_CIRCUMFERENCE = 2 * Math.PI * 88;
 
@@ -912,8 +926,8 @@
     moneyMonth: document.getElementById('moneyMonth'),
     streakDays: document.getElementById('streakDays'),
     streakLevel: document.getElementById('streakLevel'),
-    streakOverBadge: document.getElementById('streakOverBadge'),
     streakEmpty: document.getElementById('streakEmpty'),
+    streakMilestones: document.getElementById('streakMilestones'),
     tabs: document.querySelectorAll('.tab-btn'),
     views: document.querySelectorAll('.view'),
     subTabs: document.querySelectorAll('.range-btn'),
@@ -1299,48 +1313,55 @@
 
   // ---------- 連続記録(ストリーク) ----------
 
-  function getDayMedianMinutes(dayStartTs) {
-    const dayEndTs = dayStartTs + 24 * 60 * 60 * 1000;
-    const smokes = log.filter(ts => ts >= dayStartTs && ts < dayEndTs);
-    const wakes = wakeLog.filter(ts => ts >= dayStartTs && ts < dayEndTs);
+  function getRolling7DayMedianMinutes(dayStartTs) {
+    // dayStartTsの0時時点で確定している、直近7日間(dayStartTsを含まない)の中央値
+    const windowStart = dayStartTs - 7 * 24 * 60 * 60 * 1000;
+    const windowEnd = dayStartTs;
+    const smokes = log.filter(ts => ts >= windowStart && ts < windowEnd);
+    const wakes = wakeLog.filter(ts => ts >= windowStart && ts < windowEnd);
     const median = medianOfGaps(smokes, wakes);
     return median === null ? null : median / 60000;
   }
 
   function getDayTier(dayStartTs) {
-    const min = getDayMedianMinutes(dayStartTs);
+    const min = getRolling7DayMedianMinutes(dayStartTs);
     if (min === null) return null;
     return Math.floor(min / 5) * 5;
   }
 
-  function loadStreakBest() {
-    const raw = localStorage.getItem(STREAK_BEST_KEY);
-    const n = raw ? parseInt(raw, 10) : 0;
-    return isNaN(n) ? 0 : n;
-  }
-
-  function saveStreakBest(n) {
-    localStorage.setItem(STREAK_BEST_KEY, String(n));
-  }
-
-  function computeStreak() {
-    // 「今日」はまだ完了していないので、直近の完了日(昨日)を基準にする
-    const refDayStart = startOfDay(Date.now() - 24 * 60 * 60 * 1000);
-    const tier = getDayTier(refDayStart);
-    if (tier === null) return null;
-
+  function computeStreakForThreshold(threshold) {
+    const refDayStart = startOfDay(Date.now());
     let days = 0;
     let cursor = refDayStart;
     let safety = 0;
     while (safety < 400) {
       const cursorTier = getDayTier(cursor);
-      if (cursorTier === null || cursorTier < tier) break;
+      if (cursorTier === null || cursorTier < threshold) break;
       days++;
       cursor -= 24 * 60 * 60 * 1000;
       safety++;
     }
+    return days;
+  }
 
+  function computeStreak() {
+    // 直近7日間の中央値は、その日の0時時点ですでに確定している(当日分のデータを含まないため)
+    const refDayStart = startOfDay(Date.now());
+    const tier = getDayTier(refDayStart);
+    if (tier === null) return null;
+
+    const days = computeStreakForThreshold(tier);
     return { level: tier, days };
+  }
+
+  function computeMilestoneStreaks(currentTier) {
+    const goalMinutes = settings.goalMinutes;
+    const bottom = goalMinutes + 5;
+    const results = [];
+    for (let t = currentTier - 5; t >= bottom; t -= 5) {
+      results.push({ level: t, days: computeStreakForThreshold(t) });
+    }
+    return results;
   }
 
   function renderStreak() {
@@ -1349,7 +1370,7 @@
     if (streak === null) {
       el.streakDays.textContent = '--';
       el.streakLevel.textContent = '--';
-      el.streakOverBadge.style.display = 'none';
+      el.streakMilestones.innerHTML = '';
       el.streakEmpty.style.display = 'block';
       return;
     }
@@ -1358,17 +1379,14 @@
     el.streakDays.textContent = streak.days;
     el.streakLevel.textContent = streak.level;
 
-    const best = loadStreakBest();
-    if (streak.days > best) {
-      saveStreakBest(streak.days);
-      el.streakOverBadge.style.display = 'inline-block';
-    } else {
-      el.streakOverBadge.style.display = 'none';
-    }
+    const milestones = computeMilestoneStreaks(streak.level);
+    el.streakMilestones.innerHTML = milestones.map(m =>
+      `<div class="streak-milestone-row"><b>${m.days}</b>日連続 中央値${m.level}分以上</div>`
+    ).join('');
   }
 
   function renderWeekTimeline() {
-    const median = computeMedianInterval(7);
+    const median = computeMedianInterval(RETENTION_DAYS);
     el.weekMedianInterval.textContent = median === null ? '--' : formatDurationHM(median);
 
     const days = [];
