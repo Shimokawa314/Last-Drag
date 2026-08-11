@@ -97,21 +97,24 @@
   .tabs {
     display: flex;
     gap: 6px;
-    background: rgba(74,46,19,0.06);
+    background: rgba(74,46,19,0.07);
+    border: 1px solid var(--panel-line);
     padding: 4px;
     border-radius: 3px;
+    box-shadow: inset 0 1px 3px rgba(74,46,19,0.08);
   }
 
   .tab-btn {
     flex: 1;
     appearance: none;
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
     padding: 10px 0;
     border-radius: 2px;
     font-family: 'IBM Plex Sans JP', sans-serif;
     font-size: 13.5px;
     font-weight: 600;
+    letter-spacing: 0.04em;
     color: var(--text-muted);
     cursor: pointer;
     transition: background 0.25s ease, color 0.25s ease;
@@ -119,8 +122,9 @@
 
   .tab-btn.active {
     background: var(--panel);
+    border-color: var(--panel-line);
     color: var(--text);
-    box-shadow: 0 2px 8px rgba(74,46,19,0.10);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 6px rgba(74,46,19,0.10);
   }
 
   .view { display: none; flex-direction: column; gap: 22px; }
@@ -138,6 +142,22 @@
   }
 
   .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+  .ring-bezel {
+    fill: none;
+    stroke: var(--panel-line);
+    stroke-width: 1;
+  }
+
+  .gauge-tick {
+    stroke: var(--text-faint);
+    stroke-width: 1;
+  }
+
+  .gauge-tick.major {
+    stroke: var(--text-muted);
+    stroke-width: 1.5;
+  }
 
   .ring-track {
     fill: none;
@@ -318,6 +338,13 @@
     border: 1px solid var(--panel-line);
     border-radius: 4px;
     padding: 18px 20px 14px;
+    position: relative;
+    box-shadow: inset 0 0 0 1px rgba(74,46,19,0.05);
+    background-image:
+      radial-gradient(circle 1.6px at 9px 9px, var(--text-faint) 99%, transparent 100%),
+      radial-gradient(circle 1.6px at calc(100% - 9px) 9px, var(--text-faint) 99%, transparent 100%),
+      radial-gradient(circle 1.6px at 9px calc(100% - 9px), var(--text-faint) 99%, transparent 100%),
+      radial-gradient(circle 1.6px at calc(100% - 9px) calc(100% - 9px), var(--text-faint) 99%, transparent 100%);
   }
 
   .panel-head {
@@ -325,11 +352,13 @@
     align-items: baseline;
     justify-content: space-between;
     margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--panel-line);
   }
 
   .panel-title {
     font-size: 12px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     color: var(--text-muted);
     text-transform: uppercase;
   }
@@ -394,6 +423,7 @@
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 600;
+    letter-spacing: 0.03em;
     padding: 6px 12px;
     border-radius: 3px;
     cursor: pointer;
@@ -587,8 +617,10 @@
   .money-item {
     flex: 1;
     background: rgba(74,46,19,0.04);
+    border: 1px solid var(--panel-line);
     border-radius: 3px;
     padding: 14px 14px 12px;
+    box-shadow: inset 0 1px 2px rgba(74,46,19,0.07);
   }
 
   .money-label {
@@ -747,7 +779,22 @@
   <section class="view active" id="view-record">
 
     <div class="ring-wrap">
-      <svg viewBox="0 0 200 200">
+      <svg viewBox="-4 -4 208 208">
+        <circle class="ring-bezel" cx="100" cy="100" r="97"></circle>
+        <g class="gauge-ticks">
+          <line x1="186.00" y1="100.00" x2="199.00" y2="100.00" class="gauge-tick major"/>
+          <line x1="177.94" y1="145.00" x2="183.14" y2="148.00" class="gauge-tick"/>
+          <line x1="145.00" y1="177.94" x2="148.00" y2="183.14" class="gauge-tick"/>
+          <line x1="100.00" y1="186.00" x2="100.00" y2="199.00" class="gauge-tick major"/>
+          <line x1="55.00" y1="177.94" x2="52.00" y2="183.14" class="gauge-tick"/>
+          <line x1="22.06" y1="145.00" x2="16.86" y2="148.00" class="gauge-tick"/>
+          <line x1="14.00" y1="100.00" x2="1.00" y2="100.00" class="gauge-tick major"/>
+          <line x1="22.06" y1="55.00" x2="16.86" y2="52.00" class="gauge-tick"/>
+          <line x1="55.00" y1="22.06" x2="52.00" y2="16.86" class="gauge-tick"/>
+          <line x1="100.00" y1="14.00" x2="100.00" y2="1.00" class="gauge-tick major"/>
+          <line x1="145.00" y1="22.06" x2="148.00" y2="16.86" class="gauge-tick"/>
+          <line x1="177.94" y1="55.00" x2="183.14" y2="52.00" class="gauge-tick"/>
+        </g>
         <circle class="ring-track" cx="100" cy="100" r="88"></circle>
         <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="88"
           stroke-dasharray="553" stroke-dashoffset="553"></circle>
@@ -1389,6 +1436,13 @@
     ).join('');
   }
 
+  function getSingleDayMedianMinutes(dayTs) {
+    const smokes = log.filter(ts => isSameDay(ts, dayTs));
+    const wakes = wakeLog.filter(ts => isSameDay(ts, dayTs));
+    const median = medianOfGaps(smokes, wakes);
+    return median === null ? null : Math.round(median / 60000);
+  }
+
   function renderWeekTimeline() {
     const median = computeMedianInterval(RETENTION_DAYS);
     el.weekMedianInterval.textContent = median === null ? '--' : formatDurationHM(median);
@@ -1416,10 +1470,13 @@
           : formatClock(e.ts);
       }).join('  ');
 
+      const dayMedian = getSingleDayMedianMinutes(dayTs);
+      const medianText = dayMedian === null ? '--' : dayMedian;
+
       return `<div class="timeline-day">
         <div class="timeline-head">
           <span>${formatShortDate(dayTs)}(${formatWeekday(dayTs)})</span>
-          <span><b>${smokeEntries.length}</b> 回</span>
+          <span><b>${smokeEntries.length}</b> 回 ・ 中央値 <b>${medianText}</b>分</span>
         </div>
         <div class="timeline-track">${dots}</div>
         <div class="timeline-times">${times}</div>
