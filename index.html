@@ -279,6 +279,19 @@
 
   .undo-link:hover { color: var(--text-muted); }
 
+  .craving-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: -8px;
+  }
+
+  .craving-feedback {
+    font-size: 11.5px;
+    color: var(--text-faint);
+  }
+
   .add-time-form {
     display: flex;
     align-items: center;
@@ -855,6 +868,11 @@
       <div class="empty-state small" id="streakEmpty" style="display:none;">まだ記録が足りません(1日分の記録が完了すると表示されます)</div>
     </div>
 
+    <div class="craving-row">
+      <button class="undo-link" id="cravingBtn" style="display:none;">吸いたくなった</button>
+      <span class="craving-feedback" id="cravingFeedback" style="display:none;"></span>
+    </div>
+
   </section>
 
   <!-- ============ データタブ ============ -->
@@ -863,6 +881,7 @@
     <div class="range-toggle">
       <button class="range-btn active" data-subview="week">過去1週間</button>
       <button class="range-btn" data-subview="month">過去1ヶ月</button>
+      <button class="range-btn" data-subview="craving">欲求</button>
       <button class="range-btn" data-subview="settings">設定</button>
     </div>
 
@@ -879,7 +898,6 @@
       <div class="panel">
         <div class="panel-head">
           <div class="panel-title">過去7日間の時刻</div>
-          <div class="panel-count">中央値(過去30日) <b id="weekMedianInterval">--</b>分</div>
         </div>
         <div id="weekTimeline"></div>
         <div class="empty-state small" id="weekEmpty" style="display:none;">この期間の記録はありません</div>
@@ -898,9 +916,52 @@
 
       <div class="panel">
         <div class="panel-head">
+          <div class="panel-title">間隔(過去30日)</div>
+        </div>
+        <div class="money-row">
+          <div class="money-item">
+            <div class="money-label">中央値</div>
+            <div class="money-value"><span id="monthMedianInterval">--</span><span class="money-unit">分</span></div>
+          </div>
+          <div class="money-item">
+            <div class="money-label">平均値</div>
+            <div class="money-value"><span id="monthAverageInterval">--</span><span class="money-unit">分</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
           <div class="panel-title">よく吸う時間帯</div>
         </div>
         <div class="hist-list" id="histChart"></div>
+      </div>
+    </div>
+
+    <!-- ---- 欲求 ---- -->
+    <div class="data-subview" id="subview-craving">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">欲求までの時間(過去30日)</div>
+        </div>
+        <div class="money-row">
+          <div class="money-item">
+            <div class="money-label">中央値</div>
+            <div class="money-value"><span id="monthMedianCraving">--</span><span class="money-unit">分</span></div>
+          </div>
+          <div class="money-item">
+            <div class="money-label">平均値</div>
+            <div class="money-value"><span id="monthAverageCraving">--</span><span class="money-unit">分</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">推移(過去30日)</div>
+        </div>
+        <div class="bar-chart" id="cravingTrendChart"></div>
+        <div class="empty-state small" id="cravingTrendEmpty" style="display:none;">この期間の記録はありません</div>
       </div>
     </div>
 
@@ -945,6 +1006,7 @@
   const STORAGE_KEY = 'ma-smoke-log-v1';
   const SETTINGS_KEY = 'ma-settings-v1';
   const WAKE_CHECKIN_KEY = 'ma-wake-checkin-v1';
+  const CRAVING_LOG_KEY = 'ma-craving-log-v1';
   const RETENTION_DAYS = 30;             // データ保持期間
   const RING_CIRCUMFERENCE = 2 * Math.PI * 88;
 
@@ -972,6 +1034,8 @@
     addTimeCancel: document.getElementById('addTimeCancel'),
     wakeBtn: document.getElementById('wakeBtn'),
     undoWakeBtn: document.getElementById('undoWakeBtn'),
+    cravingBtn: document.getElementById('cravingBtn'),
+    cravingFeedback: document.getElementById('cravingFeedback'),
     moneyToday: document.getElementById('moneyToday'),
     moneyWeek: document.getElementById('moneyWeek'),
     moneyMonth: document.getElementById('moneyMonth'),
@@ -992,7 +1056,12 @@
     histChart: document.getElementById('histChart'),
     weekTimeline: document.getElementById('weekTimeline'),
     weekEmpty: document.getElementById('weekEmpty'),
-    weekMedianInterval: document.getElementById('weekMedianInterval'),
+    monthMedianInterval: document.getElementById('monthMedianInterval'),
+    monthAverageInterval: document.getElementById('monthAverageInterval'),
+    monthMedianCraving: document.getElementById('monthMedianCraving'),
+    monthAverageCraving: document.getElementById('monthAverageCraving'),
+    cravingTrendChart: document.getElementById('cravingTrendChart'),
+    cravingTrendEmpty: document.getElementById('cravingTrendEmpty'),
     goalMinutesInput: document.getElementById('goalMinutesInput'),
     packPriceInput: document.getElementById('packPriceInput'),
     packCountInput: document.getElementById('packCountInput'),
@@ -1081,6 +1150,40 @@
     const lastSmoke = log.length > 0 ? log[log.length - 1] : null;
     if (isWakeCheckinActive()) return wakeLog[wakeLog.length - 1];
     return lastSmoke;
+  }
+
+  function hasWakeBetween(prevTs, currTs) {
+    return wakeLog.some(w => w > prevTs && w < currTs);
+  }
+
+  function loadCravingLog() {
+    let data = [];
+    try {
+      const raw = localStorage.getItem(CRAVING_LOG_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      data = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      data = [];
+    }
+    const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    const pruned = data.filter(r => r.ts >= cutoff);
+    if (pruned.length !== data.length) {
+      localStorage.setItem(CRAVING_LOG_KEY, JSON.stringify(pruned));
+    }
+    return pruned;
+  }
+
+  function saveCravingLog(cravingLog) {
+    localStorage.setItem(CRAVING_LOG_KEY, JSON.stringify(cravingLog));
+  }
+
+  let cravingLog = loadCravingLog();
+
+  // 現在の喫煙間隔(直近の一本〜今)に、すでに欲求が記録されているか
+  function hasCravingForCurrentInterval() {
+    if (log.length === 0) return true; // 基準となる一本がなければ対象外
+    const lastSmoke = log[log.length - 1];
+    return cravingLog.some(r => r.ts > lastSmoke);
   }
 
   function isSameDay(ts, ref) {
@@ -1343,11 +1446,98 @@
     return `${m}分`;
   }
 
-  function computeMedianInterval(rangeDays) {
+  function getGapsInRange(rangeDays) {
     const cutoff = Date.now() - rangeDays * 24 * 60 * 60 * 1000;
     const smokes = log.filter(ts => ts >= cutoff);       // 既に昇順ソート済み
     const wakes = wakeLog.filter(ts => ts >= cutoff);    // 既に昇順ソート済み
-    return medianOfGaps(smokes, wakes);
+    const gaps = [];
+    for (let i = 1; i < smokes.length; i++) {
+      const prev = smokes[i - 1];
+      const curr = smokes[i];
+      const hasWakeBetween = wakes.some(w => w > prev && w < curr);
+      if (!hasWakeBetween) gaps.push(curr - prev);
+    }
+    return gaps;
+  }
+
+  function computeMedianInterval(rangeDays) {
+    const gaps = getGapsInRange(rangeDays);
+    if (gaps.length === 0) return null;
+    gaps.sort((a, b) => a - b);
+    const mid = Math.floor(gaps.length / 2);
+    return gaps.length % 2 === 0
+      ? (gaps[mid - 1] + gaps[mid]) / 2
+      : gaps[mid];
+  }
+
+  function computeAverageInterval(rangeDays) {
+    const gaps = getGapsInRange(rangeDays);
+    if (gaps.length === 0) return null;
+    return gaps.reduce((a, b) => a + b, 0) / gaps.length;
+  }
+
+  // ---------- 欲求までの時間 ----------
+
+  function getCravingValuesInRange(rangeDays) {
+    const cutoff = Date.now() - rangeDays * 24 * 60 * 60 * 1000;
+    return cravingLog.filter(r => r.ts >= cutoff).map(r => r.value);
+  }
+
+  function computeCravingMedian(rangeDays) {
+    const values = getCravingValuesInRange(rangeDays);
+    if (values.length === 0) return null;
+    values.sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    return values.length % 2 === 0
+      ? (values[mid - 1] + values[mid]) / 2
+      : values[mid];
+  }
+
+  function computeCravingAverage(rangeDays) {
+    const values = getCravingValuesInRange(rangeDays);
+    if (values.length === 0) return null;
+    return values.reduce((a, b) => a + b, 0) / values.length;
+  }
+
+  function getDayCravingMedianMinutes(dayTs) {
+    const values = cravingLog.filter(r => isSameDay(r.ts, dayTs)).map(r => r.value);
+    if (values.length === 0) return null;
+    values.sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    const median = values.length % 2 === 0
+      ? (values[mid - 1] + values[mid]) / 2
+      : values[mid];
+    return Math.round(median / 60000);
+  }
+
+  function renderCravingTrendChart() {
+    const days = [];
+    for (let i = 29; i >= 0; i--) {
+      days.push(Date.now() - i * 24 * 60 * 60 * 1000);
+    }
+    const values = days.map(getDayCravingMedianMinutes);
+    const validValues = values.filter(v => v !== null);
+
+    if (validValues.length === 0) {
+      el.cravingTrendChart.innerHTML = '';
+      el.cravingTrendEmpty.style.display = 'block';
+      return;
+    }
+    el.cravingTrendEmpty.style.display = 'none';
+
+    const max = Math.max(1, ...validValues);
+    el.cravingTrendChart.innerHTML = days.map((ts, i) => {
+      const v = values[i];
+      const h = v === null ? 0 : Math.round((v / max) * 62) + 4;
+      const label = i % 5 === 0 ? formatShortDate(ts) : '';
+      return `<div class="bar-col">
+        <div class="bar-track">
+          <div class="bar-value">${v !== null ? v : ''}</div>
+          <div class="bar-fill" style="height:${h}px;"></div>
+        </div>
+        <div class="bar-label">${label}</div>
+      </div>`;
+    }).join('');
   }
 
   function medianOfGaps(smokes, wakes) {
@@ -1450,9 +1640,6 @@
   }
 
   function renderWeekTimeline() {
-    const median = computeMedianInterval(RETENTION_DAYS);
-    el.weekMedianInterval.textContent = median === null ? '--' : Math.round(median / 60000);
-
     const days = [];
     for (let i = 0; i < 7; i++) {
       days.push(Date.now() - i * 24 * 60 * 60 * 1000);
@@ -1513,28 +1700,75 @@
 
   function renderMonthSubview() {
     renderBarChart(el.monthBarChart, el.monthRangeTotal, el.monthRangeCost, 30);
+    const median = computeMedianInterval(RETENTION_DAYS);
+    const average = computeAverageInterval(RETENTION_DAYS);
+    el.monthMedianInterval.textContent = median === null ? '--' : Math.round(median / 60000);
+    el.monthAverageInterval.textContent = average === null ? '--' : Math.round(average / 60000);
     renderHistChart();
+  }
+
+  function renderCravingSubview() {
+    const cravingMedian = computeCravingMedian(RETENTION_DAYS);
+    const cravingAverage = computeCravingAverage(RETENTION_DAYS);
+    el.monthMedianCraving.textContent = cravingMedian === null ? '--' : Math.round(cravingMedian / 60000);
+    el.monthAverageCraving.textContent = cravingAverage === null ? '--' : Math.round(cravingAverage / 60000);
+    renderCravingTrendChart();
   }
 
   function renderDataSubview() {
     if (currentDataSubview === 'week') renderWeekSubview();
     else if (currentDataSubview === 'month') renderMonthSubview();
+    else if (currentDataSubview === 'craving') renderCravingSubview();
     // settingsは静的フォームなので再描画不要(保存時のみ更新)
   }
 
   // ---------- 共通 ----------
 
+  function renderCravingButton() {
+    const eligible = log.length > 0
+      && !hasCravingForCurrentInterval()
+      && !hasWakeBetween(log[log.length - 1], Date.now());
+    el.cravingBtn.style.display = eligible ? 'inline-block' : 'none';
+  }
+
   function render() {
     tick();
     renderMoneyPanel();
     renderStreak();
+    renderCravingButton();
     renderDataSubview();
     el.undoBtn.style.display = log.length > 0 ? 'inline-block' : 'none';
   }
 
   el.recordBtn.addEventListener('click', () => {
-    log.push(Date.now());
+    const now = Date.now();
+    const prevLast = log.length > 0 ? log[log.length - 1] : null;
+
+    // 欲求ボタンが押されないまま次の一本になった場合、間隔全体を「欲求までの時間」として記録
+    if (prevLast !== null && !hasCravingForCurrentInterval() && !hasWakeBetween(prevLast, now)) {
+      cravingLog.push({ ts: now, value: now - prevLast });
+      saveCravingLog(cravingLog);
+    }
+
+    log.push(now);
     saveLog(log);
+    render();
+  });
+
+  el.cravingBtn.addEventListener('click', () => {
+    if (log.length === 0) return;
+    const lastSmoke = log[log.length - 1];
+    const now = Date.now();
+    const value = now - lastSmoke;
+
+    cravingLog.push({ ts: now, value });
+    saveCravingLog(cravingLog);
+
+    const minutes = Math.round(value / 60000);
+    el.cravingFeedback.textContent = `${minutes}分で記録しました`;
+    el.cravingFeedback.style.display = 'inline';
+    setTimeout(() => { el.cravingFeedback.style.display = 'none'; }, 3000);
+
     render();
   });
 
