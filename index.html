@@ -458,6 +458,63 @@
     padding-top: 6px;
   }
 
+  .combo-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    color: var(--text-faint);
+  }
+
+  .legend-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 3px;
+    border-radius: 1px;
+  }
+
+  .legend-swatch.line { background: var(--ink); }
+  .legend-swatch.bar { background: var(--ink-soft); border: 1px solid var(--panel-line); }
+
+  .combo-chart {
+    position: relative;
+  }
+
+  .combo-line-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 6px;
+    bottom: 22px;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .combo-line-path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.6;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .combo-line-dot {
+    fill: var(--ink);
+  }
+
+  .combo-chart .bar-fill {
+    background: var(--ink-soft);
+    border: 1px solid var(--panel-line);
+  }
+
   .bar-col {
     flex: 1 1 0;
     min-width: 0;
@@ -960,7 +1017,13 @@
         <div class="panel-head">
           <div class="panel-title">推移(過去30日)</div>
         </div>
-        <div class="bar-chart" id="cravingTrendChart"></div>
+        <div class="combo-legend">
+          <span class="legend-item"><span class="legend-swatch line"></span>中央値(欲求ボタン)</span>
+          <span class="legend-item"><span class="legend-swatch bar"></span>欲求なしで喫煙した回数</span>
+        </div>
+        <div class="bar-chart combo-chart" id="cravingTrendChart">
+          <svg class="combo-line-overlay" id="cravingTrendLine" viewBox="0 0 30 100" preserveAspectRatio="none"></svg>
+        </div>
         <div class="empty-state small" id="cravingTrendEmpty" style="display:none;">この期間の記録はありません</div>
       </div>
     </div>
@@ -1007,6 +1070,7 @@
   const SETTINGS_KEY = 'ma-settings-v1';
   const WAKE_CHECKIN_KEY = 'ma-wake-checkin-v1';
   const CRAVING_LOG_KEY = 'ma-craving-log-v1';
+  const NO_CRAVING_SMOKE_KEY = 'ma-no-craving-smoke-log-v1';
   const RETENTION_DAYS = 30;             // データ保持期間
   const RING_CIRCUMFERENCE = 2 * Math.PI * 88;
 
@@ -1061,6 +1125,7 @@
     monthMedianCraving: document.getElementById('monthMedianCraving'),
     monthAverageCraving: document.getElementById('monthAverageCraving'),
     cravingTrendChart: document.getElementById('cravingTrendChart'),
+    cravingTrendLine: document.getElementById('cravingTrendLine'),
     cravingTrendEmpty: document.getElementById('cravingTrendEmpty'),
     goalMinutesInput: document.getElementById('goalMinutesInput'),
     packPriceInput: document.getElementById('packPriceInput'),
@@ -1178,6 +1243,29 @@
   }
 
   let cravingLog = loadCravingLog();
+
+  function loadNoCravingSmokeLog() {
+    let data = [];
+    try {
+      const raw = localStorage.getItem(NO_CRAVING_SMOKE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      data = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      data = [];
+    }
+    const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    const pruned = data.filter(ts => ts >= cutoff);
+    if (pruned.length !== data.length) {
+      localStorage.setItem(NO_CRAVING_SMOKE_KEY, JSON.stringify(pruned));
+    }
+    return pruned;
+  }
+
+  function saveNoCravingSmokeLog(noCravingSmokeLog) {
+    localStorage.setItem(NO_CRAVING_SMOKE_KEY, JSON.stringify(noCravingSmokeLog));
+  }
+
+  let noCravingSmokeLog = loadNoCravingSmokeLog();
 
   // 現在の喫煙間隔(直近の一本〜今)に、すでに欲求が記録されているか
   function hasCravingForCurrentInterval() {
@@ -1510,34 +1598,65 @@
     return Math.round(median / 60000);
   }
 
+  function getDayNoCravingSmokeCount(dayTs) {
+    return noCravingSmokeLog.filter(ts => isSameDay(ts, dayTs)).length;
+  }
+
   function renderCravingTrendChart() {
     const days = [];
     for (let i = 29; i >= 0; i--) {
       days.push(Date.now() - i * 24 * 60 * 60 * 1000);
     }
-    const values = days.map(getDayCravingMedianMinutes);
-    const validValues = values.filter(v => v !== null);
 
-    if (validValues.length === 0) {
-      el.cravingTrendChart.innerHTML = '';
+    const rawMedians = days.map(getDayCravingMedianMinutes);
+    let lastKnown = null;
+    const filledMedians = rawMedians.map(v => {
+      if (v !== null) lastKnown = v;
+      return lastKnown;
+    });
+    const counts = days.map(getDayNoCravingSmokeCount);
+
+    const hasAnyMedian = rawMedians.some(v => v !== null);
+    const hasAnyCount = counts.some(c => c > 0);
+
+    // 既存のバー要素だけ入れ替える(SVGオーバーレイは残す)
+    Array.from(el.cravingTrendChart.querySelectorAll('.bar-col')).forEach(n => n.remove());
+
+    if (!hasAnyMedian && !hasAnyCount) {
+      el.cravingTrendLine.innerHTML = '';
       el.cravingTrendEmpty.style.display = 'block';
       return;
     }
     el.cravingTrendEmpty.style.display = 'none';
 
-    const max = Math.max(1, ...validValues);
-    el.cravingTrendChart.innerHTML = days.map((ts, i) => {
-      const v = values[i];
-      const h = v === null ? 0 : Math.round((v / max) * 62) + 4;
+    const countMax = Math.max(1, ...counts);
+    const barsHtml = days.map((ts, i) => {
+      const c = counts[i];
+      const h = Math.round((c / countMax) * 62) + 4;
       const label = i % 5 === 0 ? formatShortDate(ts) : '';
       return `<div class="bar-col">
         <div class="bar-track">
-          <div class="bar-value">${v !== null ? v : ''}</div>
           <div class="bar-fill" style="height:${h}px;"></div>
         </div>
         <div class="bar-label">${label}</div>
       </div>`;
     }).join('');
+    el.cravingTrendChart.insertAdjacentHTML('beforeend', barsHtml);
+
+    const validMedians = filledMedians.filter(v => v !== null);
+    if (validMedians.length === 0) {
+      el.cravingTrendLine.innerHTML = '';
+      return;
+    }
+    const medianMax = Math.max(1, ...validMedians);
+    const points = [];
+    filledMedians.forEach((v, i) => {
+      if (v === null) return;
+      const x = i + 0.5;
+      const y = 96 - (v / medianMax) * 88;
+      points.push(`${x},${y}`);
+    });
+    el.cravingTrendLine.innerHTML = `<polyline class="combo-line-path" points="${points.join(' ')}"/>`;
   }
 
   function medianOfGaps(smokes, wakes) {
@@ -1744,10 +1863,10 @@
     const now = Date.now();
     const prevLast = log.length > 0 ? log[log.length - 1] : null;
 
-    // 欲求ボタンが押されないまま次の一本になった場合、間隔全体を「欲求までの時間」として記録
+    // 欲求ボタンを押さないまま次の一本になった場合は、回数としてだけ記録する
     if (prevLast !== null && !hasCravingForCurrentInterval() && !hasWakeBetween(prevLast, now)) {
-      cravingLog.push({ ts: now, value: now - prevLast });
-      saveCravingLog(cravingLog);
+      noCravingSmokeLog.push(now);
+      saveNoCravingSmokeLog(noCravingSmokeLog);
     }
 
     log.push(now);
