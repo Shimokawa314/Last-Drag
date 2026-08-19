@@ -504,6 +504,11 @@
     white-space: nowrap;
   }
 
+  .bar-axis-right .bar-axis-tick {
+    right: auto;
+    left: 0;
+  }
+
   .bar-axis-spacer {
     height: 14px;
     margin-top: 8px;
@@ -1076,8 +1081,8 @@
           <div class="panel-title">推移(過去30日)</div>
         </div>
         <div class="combo-legend">
-          <span class="legend-item"><span class="legend-swatch line"></span>中央値(欲求ボタン)・分</span>
-          <span class="legend-item"><span class="legend-swatch bar"></span>欲求なしで喫煙した回数<span id="cravingCountMaxLabel"></span></span>
+          <span class="legend-item"><span class="legend-swatch line"></span>中央値(分)・左軸</span>
+          <span class="legend-item"><span class="legend-swatch bar"></span>欲求なしで喫煙した回数・右軸</span>
         </div>
         <div class="bar-chart-wrap">
           <div class="bar-axis" id="cravingAxis">
@@ -1090,6 +1095,14 @@
           </div>
           <div class="bar-chart combo-chart" id="cravingTrendChart">
             <svg class="combo-line-overlay" id="cravingTrendLine" viewBox="0 0 30 100" preserveAspectRatio="none"></svg>
+          </div>
+          <div class="bar-axis bar-axis-right" id="cravingCountAxis">
+            <div class="bar-axis-track">
+              <span class="bar-axis-tick" style="bottom:100%;">--</span>
+              <span class="bar-axis-tick" style="bottom:50%;">--</span>
+              <span class="bar-axis-tick" style="bottom:0%;">0</span>
+            </div>
+            <div class="bar-axis-spacer"></div>
           </div>
         </div>
         <div class="empty-state small" id="cravingTrendEmpty" style="display:none;">この期間の記録はありません</div>
@@ -1196,7 +1209,7 @@
     cravingTrendLine: document.getElementById('cravingTrendLine'),
     cravingTrendEmpty: document.getElementById('cravingTrendEmpty'),
     cravingAxis: document.getElementById('cravingAxis'),
-    cravingCountMaxLabel: document.getElementById('cravingCountMaxLabel'),
+    cravingCountAxis: document.getElementById('cravingCountAxis'),
     goalMinutesInput: document.getElementById('goalMinutesInput'),
     packPriceInput: document.getElementById('packPriceInput'),
     packCountInput: document.getElementById('packCountInput'),
@@ -1698,13 +1711,17 @@
       const ticks = el.cravingAxis.querySelectorAll('.bar-axis-tick');
       ticks[0].textContent = '--';
       ticks[1].textContent = '--';
-      el.cravingCountMaxLabel.textContent = '';
+      const countTicks = el.cravingCountAxis.querySelectorAll('.bar-axis-tick');
+      countTicks[0].textContent = '--';
+      countTicks[1].textContent = '--';
       return;
     }
     el.cravingTrendEmpty.style.display = 'none';
 
     const countMax = Math.max(1, ...counts);
-    el.cravingCountMaxLabel.textContent = `(最大${countMax}回/日)`;
+    const countTicks = el.cravingCountAxis.querySelectorAll('.bar-axis-tick');
+    countTicks[0].textContent = countMax;
+    countTicks[1].textContent = Math.round(countMax / 2);
     const barsHtml = days.map((ts, i) => {
       const c = counts[i];
       const h = Math.round((c / countMax) * 62) + 4;
