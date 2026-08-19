@@ -279,17 +279,41 @@
 
   .undo-link:hover { color: var(--text-muted); }
 
-  .craving-row {
-    display: flex;
-    justify-content: center;
+  .craving-fab {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    border: 2px solid var(--panel);
+    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    display: none;
     align-items: center;
-    gap: 10px;
-    margin-top: -8px;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(74,46,19,0.30);
+    z-index: 2;
+    transition: transform 0.12s ease;
   }
 
+  .craving-fab:active { transform: scale(0.93); }
+
   .craving-feedback {
-    font-size: 11.5px;
+    position: absolute;
+    top: 70px;
+    right: 4px;
+    max-width: 92px;
+    text-align: right;
+    font-size: 10px;
+    line-height: 1.4;
     color: var(--text-faint);
+    display: none;
   }
 
   .add-time-form {
@@ -450,7 +474,44 @@
   }
 
   /* ---------- Bar chart ---------- */
+  .bar-chart-wrap {
+    display: flex;
+    gap: 8px;
+  }
+
+  .bar-axis {
+    flex-shrink: 0;
+    width: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 120px;
+    padding-top: 6px;
+  }
+
+  .bar-axis-track {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+
+  .bar-axis-tick {
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  .bar-axis-spacer {
+    height: 14px;
+    margin-top: 8px;
+  }
+
   .bar-chart {
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: stretch;
     gap: 4px;
@@ -874,6 +935,8 @@
         <div class="elapsed-label" id="elapsedLabel">記録なし</div>
         <div class="status-msg" id="statusMsg">下のボタンで最初の記録をつけましょう</div>
       </div>
+      <button class="craving-fab" id="cravingBtn" style="display:none;">吸いたい</button>
+      <div class="craving-feedback" id="cravingFeedback" style="display:none;"></div>
     </div>
 
     <div>
@@ -923,11 +986,6 @@
       </div>
       <div class="streak-milestones" id="streakMilestones"></div>
       <div class="empty-state small" id="streakEmpty" style="display:none;">まだ記録が足りません(1日分の記録が完了すると表示されます)</div>
-    </div>
-
-    <div class="craving-row">
-      <button class="undo-link" id="cravingBtn" style="display:none;">吸いたくなった</button>
-      <span class="craving-feedback" id="cravingFeedback" style="display:none;"></span>
     </div>
 
   </section>
@@ -1018,11 +1076,21 @@
           <div class="panel-title">推移(過去30日)</div>
         </div>
         <div class="combo-legend">
-          <span class="legend-item"><span class="legend-swatch line"></span>中央値(欲求ボタン)</span>
-          <span class="legend-item"><span class="legend-swatch bar"></span>欲求なしで喫煙した回数</span>
+          <span class="legend-item"><span class="legend-swatch line"></span>中央値(欲求ボタン)・分</span>
+          <span class="legend-item"><span class="legend-swatch bar"></span>欲求なしで喫煙した回数<span id="cravingCountMaxLabel"></span></span>
         </div>
-        <div class="bar-chart combo-chart" id="cravingTrendChart">
-          <svg class="combo-line-overlay" id="cravingTrendLine" viewBox="0 0 30 100" preserveAspectRatio="none"></svg>
+        <div class="bar-chart-wrap">
+          <div class="bar-axis" id="cravingAxis">
+            <div class="bar-axis-track">
+              <span class="bar-axis-tick" style="bottom:100%;">--</span>
+              <span class="bar-axis-tick" style="bottom:50%;">--</span>
+              <span class="bar-axis-tick" style="bottom:0%;">0</span>
+            </div>
+            <div class="bar-axis-spacer"></div>
+          </div>
+          <div class="bar-chart combo-chart" id="cravingTrendChart">
+            <svg class="combo-line-overlay" id="cravingTrendLine" viewBox="0 0 30 100" preserveAspectRatio="none"></svg>
+          </div>
         </div>
         <div class="empty-state small" id="cravingTrendEmpty" style="display:none;">この期間の記録はありません</div>
       </div>
@@ -1127,6 +1195,8 @@
     cravingTrendChart: document.getElementById('cravingTrendChart'),
     cravingTrendLine: document.getElementById('cravingTrendLine'),
     cravingTrendEmpty: document.getElementById('cravingTrendEmpty'),
+    cravingAxis: document.getElementById('cravingAxis'),
+    cravingCountMaxLabel: document.getElementById('cravingCountMaxLabel'),
     goalMinutesInput: document.getElementById('goalMinutesInput'),
     packPriceInput: document.getElementById('packPriceInput'),
     packCountInput: document.getElementById('packCountInput'),
@@ -1625,11 +1695,16 @@
     if (!hasAnyMedian && !hasAnyCount) {
       el.cravingTrendLine.innerHTML = '';
       el.cravingTrendEmpty.style.display = 'block';
+      const ticks = el.cravingAxis.querySelectorAll('.bar-axis-tick');
+      ticks[0].textContent = '--';
+      ticks[1].textContent = '--';
+      el.cravingCountMaxLabel.textContent = '';
       return;
     }
     el.cravingTrendEmpty.style.display = 'none';
 
     const countMax = Math.max(1, ...counts);
+    el.cravingCountMaxLabel.textContent = `(最大${countMax}回/日)`;
     const barsHtml = days.map((ts, i) => {
       const c = counts[i];
       const h = Math.round((c / countMax) * 62) + 4;
@@ -1646,9 +1721,17 @@
     const validMedians = filledMedians.filter(v => v !== null);
     if (validMedians.length === 0) {
       el.cravingTrendLine.innerHTML = '';
+      const ticks = el.cravingAxis.querySelectorAll('.bar-axis-tick');
+      ticks[0].textContent = '--';
+      ticks[1].textContent = '--';
       return;
     }
     const medianMax = Math.max(1, ...validMedians);
+    const ticks = el.cravingAxis.querySelectorAll('.bar-axis-tick');
+    // ticks[0] = 上(最大値), ticks[1] = 中間, ticks[2] = 0
+    ticks[0].textContent = medianMax;
+    ticks[1].textContent = Math.round(medianMax / 2);
+
     const points = [];
     filledMedians.forEach((v, i) => {
       if (v === null) return;
@@ -1847,7 +1930,7 @@
     const eligible = log.length > 0
       && !hasCravingForCurrentInterval()
       && !hasWakeBetween(log[log.length - 1], Date.now());
-    el.cravingBtn.style.display = eligible ? 'inline-block' : 'none';
+    el.cravingBtn.style.display = eligible ? 'flex' : 'none';
   }
 
   function render() {
@@ -1885,7 +1968,7 @@
 
     const minutes = Math.round(value / 60000);
     el.cravingFeedback.textContent = `${minutes}分で記録しました`;
-    el.cravingFeedback.style.display = 'inline';
+    el.cravingFeedback.style.display = 'block';
     setTimeout(() => { el.cravingFeedback.style.display = 'none'; }, 3000);
 
     render();
