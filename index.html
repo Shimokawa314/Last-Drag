@@ -1081,7 +1081,7 @@
           <div class="panel-title">推移(過去30日)</div>
         </div>
         <div class="combo-legend">
-          <span class="legend-item"><span class="legend-swatch line"></span>中央値(分)・左軸</span>
+          <span class="legend-item"><span class="legend-swatch line"></span>中央値(過去7日・分)・左軸</span>
           <span class="legend-item"><span class="legend-swatch bar"></span>欲求なしで喫煙した回数・右軸</span>
         </div>
         <div class="bar-chart-wrap">
@@ -1106,6 +1106,14 @@
           </div>
         </div>
         <div class="empty-state small" id="cravingTrendEmpty" style="display:none;">この期間の記録はありません</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">過去7日間の欲求時刻</div>
+        </div>
+        <div id="cravingWeekTimeline"></div>
+        <div class="empty-state small" id="cravingWeekEmpty" style="display:none;">この期間の記録はありません</div>
       </div>
     </div>
 
@@ -1208,6 +1216,8 @@
     cravingTrendChart: document.getElementById('cravingTrendChart'),
     cravingTrendLine: document.getElementById('cravingTrendLine'),
     cravingTrendEmpty: document.getElementById('cravingTrendEmpty'),
+    cravingWeekTimeline: document.getElementById('cravingWeekTimeline'),
+    cravingWeekEmpty: document.getElementById('cravingWeekEmpty'),
     cravingAxis: document.getElementById('cravingAxis'),
     cravingCountAxis: document.getElementById('cravingCountAxis'),
     goalMinutesInput: document.getElementById('goalMinutesInput'),
@@ -1671,7 +1681,12 @@
   }
 
   function getDayCravingMedianMinutes(dayTs) {
-    const values = cravingLog.filter(r => isSameDay(r.ts, dayTs)).map(r => r.value);
+    const dayStart = startOfDay(dayTs);
+    const windowStart = dayStart - 6 * 24 * 60 * 60 * 1000; // その日を含む過去7日間
+    const windowEnd = isSameDay(dayTs, Date.now()) ? Date.now() : dayStart + 24 * 60 * 60 * 1000;
+    const values = cravingLog
+      .filter(r => r.ts >= windowStart && r.ts < windowEnd && Number.isFinite(r.value) && r.value >= 0)
+      .map(r => r.value);
     if (values.length === 0) return null;
     values.sort((a, b) => a - b);
     const mid = Math.floor(values.length / 2);
@@ -1753,7 +1768,8 @@
     filledMedians.forEach((v, i) => {
       if (v === null) return;
       const x = i + 0.5;
-      const y = 96 - (v / medianMax) * 88;
+      const rawY = 96 - (v / medianMax) * 88;
+      const y = Math.min(96, Math.max(8, rawY));
       points.push(`${x},${y}`);
     });
     el.cravingTrendLine.innerHTML = `<polyline class="combo-line-path" points="${points.join(' ')}"/>`;
@@ -1926,12 +1942,52 @@
     renderHistChart();
   }
 
+  function renderCravingWeekTimeline() {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      days.push(Date.now() - i * 24 * 60 * 60 * 1000);
+    }
+    const rows = days.map(dayTs => {
+      const entries = cravingLog.filter(r => isSameDay(r.ts, dayTs)).sort((a, b) => a.ts - b.ts);
+      if (entries.length === 0) return null;
+
+      const dots = entries.map(r => {
+        const d = new Date(r.ts);
+        const pct = ((d.getHours() * 60 + d.getMinutes()) / (24 * 60)) * 100;
+        return `<div class="timeline-dot" style="left:${pct}%;"></div>`;
+      }).join('');
+
+      const times = entries.map(r => {
+        const min = Math.round(r.value / 60000);
+        return `${formatClock(r.ts)}(${min}分)`;
+      }).join('  ');
+
+      return `<div class="timeline-day">
+        <div class="timeline-head">
+          <span>${formatShortDate(dayTs)}(${formatWeekday(dayTs)})</span>
+          <span><b>${entries.length}</b> 回</span>
+        </div>
+        <div class="timeline-track">${dots}</div>
+        <div class="timeline-times">${times}</div>
+      </div>`;
+    }).filter(Boolean);
+
+    if (rows.length === 0) {
+      el.cravingWeekTimeline.innerHTML = '';
+      el.cravingWeekEmpty.style.display = 'block';
+    } else {
+      el.cravingWeekEmpty.style.display = 'none';
+      el.cravingWeekTimeline.innerHTML = rows.join('');
+    }
+  }
+
   function renderCravingSubview() {
     const cravingMedian = computeCravingMedian(RETENTION_DAYS);
     const cravingAverage = computeCravingAverage(RETENTION_DAYS);
     el.monthMedianCraving.textContent = cravingMedian === null ? '--' : Math.round(cravingMedian / 60000);
     el.monthAverageCraving.textContent = cravingAverage === null ? '--' : Math.round(cravingAverage / 60000);
     renderCravingTrendChart();
+    renderCravingWeekTimeline();
   }
 
   function renderDataSubview() {
