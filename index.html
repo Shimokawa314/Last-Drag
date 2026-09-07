@@ -279,43 +279,6 @@
 
   .undo-link:hover { color: var(--text-muted); }
 
-  .craving-fab {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: var(--bg);
-    border: 2px solid var(--panel);
-    font-family: 'IBM Plex Sans JP', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(74,46,19,0.30);
-    z-index: 2;
-    transition: transform 0.12s ease;
-  }
-
-  .craving-fab:active { transform: scale(0.93); }
-
-  .craving-feedback {
-    position: absolute;
-    top: 70px;
-    right: 4px;
-    max-width: 92px;
-    text-align: right;
-    font-size: 10px;
-    line-height: 1.4;
-    color: var(--text-faint);
-    display: none;
-  }
-
   .add-time-form {
     display: flex;
     align-items: center;
@@ -474,46 +437,6 @@
   }
 
   /* ---------- Bar chart ---------- */
-  .bar-chart-wrap {
-    display: flex;
-    gap: 8px;
-  }
-
-  .bar-axis {
-    flex-shrink: 0;
-    width: 24px;
-    display: flex;
-    flex-direction: column;
-    height: 120px;
-    padding-top: 6px;
-  }
-
-  .bar-axis-track {
-    flex: 1;
-    min-height: 0;
-    position: relative;
-  }
-
-  .bar-axis-tick {
-    position: absolute;
-    right: 0;
-    transform: translateY(50%);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px;
-    color: var(--text-faint);
-    white-space: nowrap;
-  }
-
-  .bar-axis-right .bar-axis-tick {
-    right: auto;
-    left: 0;
-  }
-
-  .bar-axis-spacer {
-    height: 14px;
-    margin-top: 8px;
-  }
-
   .bar-chart {
     flex: 1;
     min-width: 0;
@@ -522,63 +445,6 @@
     gap: 4px;
     height: 120px;
     padding-top: 6px;
-  }
-
-  .combo-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-bottom: 10px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10.5px;
-    color: var(--text-faint);
-  }
-
-  .legend-swatch {
-    display: inline-block;
-    width: 12px;
-    height: 3px;
-    border-radius: 1px;
-  }
-
-  .legend-swatch.line { background: var(--ink); }
-  .legend-swatch.bar { background: var(--ink-soft); border: 1px solid var(--panel-line); }
-
-  .combo-chart {
-    position: relative;
-  }
-
-  .combo-line-overlay {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 6px;
-    bottom: 22px;
-    width: 100%;
-    height: auto;
-    pointer-events: none;
-    overflow: visible;
-  }
-
-  .combo-line-path {
-    fill: none;
-    stroke: var(--ink);
-    stroke-width: 1.6;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .combo-line-dot {
-    fill: var(--ink);
-  }
-
-  .combo-chart .bar-fill {
-    background: var(--ink-soft);
-    border: 1px solid var(--panel-line);
   }
 
   .bar-col {
@@ -940,8 +806,6 @@
         <div class="elapsed-label" id="elapsedLabel">記録なし</div>
         <div class="status-msg" id="statusMsg">下のボタンで最初の記録をつけましょう</div>
       </div>
-      <button class="craving-fab" id="cravingBtn" style="display:none;">吸いたい</button>
-      <div class="craving-feedback" id="cravingFeedback" style="display:none;"></div>
     </div>
 
     <div>
@@ -1001,7 +865,6 @@
     <div class="range-toggle">
       <button class="range-btn active" data-subview="week">過去1週間</button>
       <button class="range-btn" data-subview="month">過去1ヶ月</button>
-      <button class="range-btn" data-subview="craving">欲求</button>
       <button class="range-btn" data-subview="settings">設定</button>
     </div>
 
@@ -1058,65 +921,6 @@
       </div>
     </div>
 
-    <!-- ---- 欲求 ---- -->
-    <div class="data-subview" id="subview-craving">
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-title">欲求までの時間(過去30日)</div>
-        </div>
-        <div class="money-row">
-          <div class="money-item">
-            <div class="money-label">中央値</div>
-            <div class="money-value"><span id="monthMedianCraving">--</span><span class="money-unit">分</span></div>
-          </div>
-          <div class="money-item">
-            <div class="money-label">平均値</div>
-            <div class="money-value"><span id="monthAverageCraving">--</span><span class="money-unit">分</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-title">推移(過去30日)</div>
-        </div>
-        <div class="combo-legend">
-          <span class="legend-item"><span class="legend-swatch line"></span>中央値(過去7日・分)・左軸</span>
-          <span class="legend-item"><span class="legend-swatch bar"></span>欲求なしで喫煙した回数・右軸</span>
-        </div>
-        <div class="bar-chart-wrap">
-          <div class="bar-axis" id="cravingAxis">
-            <div class="bar-axis-track">
-              <span class="bar-axis-tick" style="bottom:100%;">--</span>
-              <span class="bar-axis-tick" style="bottom:50%;">--</span>
-              <span class="bar-axis-tick" style="bottom:0%;">0</span>
-            </div>
-            <div class="bar-axis-spacer"></div>
-          </div>
-          <div class="bar-chart combo-chart" id="cravingTrendChart">
-            <svg class="combo-line-overlay" id="cravingTrendLine" viewBox="0 0 30 100" preserveAspectRatio="none"></svg>
-          </div>
-          <div class="bar-axis bar-axis-right" id="cravingCountAxis">
-            <div class="bar-axis-track">
-              <span class="bar-axis-tick" style="bottom:100%;">--</span>
-              <span class="bar-axis-tick" style="bottom:50%;">--</span>
-              <span class="bar-axis-tick" style="bottom:0%;">0</span>
-            </div>
-            <div class="bar-axis-spacer"></div>
-          </div>
-        </div>
-        <div class="empty-state small" id="cravingTrendEmpty" style="display:none;">この期間の記録はありません</div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-title">過去7日間の欲求時刻</div>
-        </div>
-        <div id="cravingWeekTimeline"></div>
-        <div class="empty-state small" id="cravingWeekEmpty" style="display:none;">この期間の記録はありません</div>
-      </div>
-    </div>
-
     <!-- ---- 設定 ---- -->
     <div class="data-subview" id="subview-settings">
       <div class="panel">
@@ -1158,8 +962,6 @@
   const STORAGE_KEY = 'ma-smoke-log-v1';
   const SETTINGS_KEY = 'ma-settings-v1';
   const WAKE_CHECKIN_KEY = 'ma-wake-checkin-v1';
-  const CRAVING_LOG_KEY = 'ma-craving-log-v1';
-  const NO_CRAVING_SMOKE_KEY = 'ma-no-craving-smoke-log-v1';
   const RETENTION_DAYS = 30;             // データ保持期間
   const RING_CIRCUMFERENCE = 2 * Math.PI * 88;
 
@@ -1187,8 +989,6 @@
     addTimeCancel: document.getElementById('addTimeCancel'),
     wakeBtn: document.getElementById('wakeBtn'),
     undoWakeBtn: document.getElementById('undoWakeBtn'),
-    cravingBtn: document.getElementById('cravingBtn'),
-    cravingFeedback: document.getElementById('cravingFeedback'),
     moneyToday: document.getElementById('moneyToday'),
     moneyWeek: document.getElementById('moneyWeek'),
     moneyMonth: document.getElementById('moneyMonth'),
@@ -1211,15 +1011,6 @@
     weekEmpty: document.getElementById('weekEmpty'),
     monthMedianInterval: document.getElementById('monthMedianInterval'),
     monthAverageInterval: document.getElementById('monthAverageInterval'),
-    monthMedianCraving: document.getElementById('monthMedianCraving'),
-    monthAverageCraving: document.getElementById('monthAverageCraving'),
-    cravingTrendChart: document.getElementById('cravingTrendChart'),
-    cravingTrendLine: document.getElementById('cravingTrendLine'),
-    cravingTrendEmpty: document.getElementById('cravingTrendEmpty'),
-    cravingWeekTimeline: document.getElementById('cravingWeekTimeline'),
-    cravingWeekEmpty: document.getElementById('cravingWeekEmpty'),
-    cravingAxis: document.getElementById('cravingAxis'),
-    cravingCountAxis: document.getElementById('cravingCountAxis'),
     goalMinutesInput: document.getElementById('goalMinutesInput'),
     packPriceInput: document.getElementById('packPriceInput'),
     packCountInput: document.getElementById('packCountInput'),
@@ -1248,6 +1039,20 @@
   }
 
   let settings = loadSettings();
+
+  const STREAK_RESET_KEY = 'ma-streak-reset-ts-v1';
+
+  function loadStreakResetTs() {
+    const raw = localStorage.getItem(STREAK_RESET_KEY);
+    const n = raw ? parseInt(raw, 10) : null;
+    return (n && !isNaN(n)) ? n : null;
+  }
+
+  function saveStreakResetTs(ts) {
+    localStorage.setItem(STREAK_RESET_KEY, String(ts));
+  }
+
+  let streakResetTs = loadStreakResetTs();
 
   function loadLog() {
     let data = [];
@@ -1308,63 +1113,6 @@
     const lastSmoke = log.length > 0 ? log[log.length - 1] : null;
     if (isWakeCheckinActive()) return wakeLog[wakeLog.length - 1];
     return lastSmoke;
-  }
-
-  function hasWakeBetween(prevTs, currTs) {
-    return wakeLog.some(w => w > prevTs && w < currTs);
-  }
-
-  function loadCravingLog() {
-    let data = [];
-    try {
-      const raw = localStorage.getItem(CRAVING_LOG_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      data = Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      data = [];
-    }
-    const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
-    const pruned = data.filter(r => r.ts >= cutoff);
-    if (pruned.length !== data.length) {
-      localStorage.setItem(CRAVING_LOG_KEY, JSON.stringify(pruned));
-    }
-    return pruned;
-  }
-
-  function saveCravingLog(cravingLog) {
-    localStorage.setItem(CRAVING_LOG_KEY, JSON.stringify(cravingLog));
-  }
-
-  let cravingLog = loadCravingLog();
-
-  function loadNoCravingSmokeLog() {
-    let data = [];
-    try {
-      const raw = localStorage.getItem(NO_CRAVING_SMOKE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      data = Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      data = [];
-    }
-    const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
-    const pruned = data.filter(ts => ts >= cutoff);
-    if (pruned.length !== data.length) {
-      localStorage.setItem(NO_CRAVING_SMOKE_KEY, JSON.stringify(pruned));
-    }
-    return pruned;
-  }
-
-  function saveNoCravingSmokeLog(noCravingSmokeLog) {
-    localStorage.setItem(NO_CRAVING_SMOKE_KEY, JSON.stringify(noCravingSmokeLog));
-  }
-
-  let noCravingSmokeLog = loadNoCravingSmokeLog();
-
-  // 現在の喫煙間隔(直近の一本〜今)に、すでに欲求が記録されているか
-  function hasCravingForCurrentInterval() {
-    if (log.length === 0) return true; // 基準となる一本がなければ対象外
-    const lastSmoke = log[log.length - 1];
-    return cravingLog.some(r => r.ts > lastSmoke);
   }
 
   function isSameDay(ts, ref) {
@@ -1657,124 +1405,6 @@
     return gaps.reduce((a, b) => a + b, 0) / gaps.length;
   }
 
-  // ---------- 欲求までの時間 ----------
-
-  function getCravingValuesInRange(rangeDays) {
-    const cutoff = Date.now() - rangeDays * 24 * 60 * 60 * 1000;
-    return cravingLog.filter(r => r.ts >= cutoff).map(r => r.value);
-  }
-
-  function computeCravingMedian(rangeDays) {
-    const values = getCravingValuesInRange(rangeDays);
-    if (values.length === 0) return null;
-    values.sort((a, b) => a - b);
-    const mid = Math.floor(values.length / 2);
-    return values.length % 2 === 0
-      ? (values[mid - 1] + values[mid]) / 2
-      : values[mid];
-  }
-
-  function computeCravingAverage(rangeDays) {
-    const values = getCravingValuesInRange(rangeDays);
-    if (values.length === 0) return null;
-    return values.reduce((a, b) => a + b, 0) / values.length;
-  }
-
-  function getDayCravingMedianMinutes(dayTs) {
-    const dayStart = startOfDay(dayTs);
-    const windowStart = dayStart - 6 * 24 * 60 * 60 * 1000; // その日を含む過去7日間
-    const windowEnd = isSameDay(dayTs, Date.now()) ? Date.now() : dayStart + 24 * 60 * 60 * 1000;
-    const values = cravingLog
-      .filter(r => r.ts >= windowStart && r.ts < windowEnd && Number.isFinite(r.value) && r.value >= 0)
-      .map(r => r.value);
-    if (values.length === 0) return null;
-    values.sort((a, b) => a - b);
-    const mid = Math.floor(values.length / 2);
-    const median = values.length % 2 === 0
-      ? (values[mid - 1] + values[mid]) / 2
-      : values[mid];
-    return Math.round(median / 60000);
-  }
-
-  function getDayNoCravingSmokeCount(dayTs) {
-    return noCravingSmokeLog.filter(ts => isSameDay(ts, dayTs)).length;
-  }
-
-  function renderCravingTrendChart() {
-    const days = [];
-    for (let i = 29; i >= 0; i--) {
-      days.push(Date.now() - i * 24 * 60 * 60 * 1000);
-    }
-
-    const rawMedians = days.map(getDayCravingMedianMinutes);
-    let lastKnown = null;
-    const filledMedians = rawMedians.map(v => {
-      if (v !== null) lastKnown = v;
-      return lastKnown;
-    });
-    const counts = days.map(getDayNoCravingSmokeCount);
-
-    const hasAnyMedian = rawMedians.some(v => v !== null);
-    const hasAnyCount = counts.some(c => c > 0);
-
-    // 既存のバー要素だけ入れ替える(SVGオーバーレイは残す)
-    Array.from(el.cravingTrendChart.querySelectorAll('.bar-col')).forEach(n => n.remove());
-
-    if (!hasAnyMedian && !hasAnyCount) {
-      el.cravingTrendLine.innerHTML = '';
-      el.cravingTrendEmpty.style.display = 'block';
-      const ticks = el.cravingAxis.querySelectorAll('.bar-axis-tick');
-      ticks[0].textContent = '--';
-      ticks[1].textContent = '--';
-      const countTicks = el.cravingCountAxis.querySelectorAll('.bar-axis-tick');
-      countTicks[0].textContent = '--';
-      countTicks[1].textContent = '--';
-      return;
-    }
-    el.cravingTrendEmpty.style.display = 'none';
-
-    const countMax = Math.max(1, ...counts);
-    const countTicks = el.cravingCountAxis.querySelectorAll('.bar-axis-tick');
-    countTicks[0].textContent = countMax;
-    countTicks[1].textContent = Math.round(countMax / 2);
-    const barsHtml = days.map((ts, i) => {
-      const c = counts[i];
-      const h = Math.round((c / countMax) * 62) + 4;
-      const label = i % 5 === 0 ? formatShortDate(ts) : '';
-      return `<div class="bar-col">
-        <div class="bar-track">
-          <div class="bar-fill" style="height:${h}px;"></div>
-        </div>
-        <div class="bar-label">${label}</div>
-      </div>`;
-    }).join('');
-    el.cravingTrendChart.insertAdjacentHTML('beforeend', barsHtml);
-
-    const validMedians = filledMedians.filter(v => v !== null);
-    if (validMedians.length === 0) {
-      el.cravingTrendLine.innerHTML = '';
-      const ticks = el.cravingAxis.querySelectorAll('.bar-axis-tick');
-      ticks[0].textContent = '--';
-      ticks[1].textContent = '--';
-      return;
-    }
-    const medianMax = Math.max(1, ...validMedians);
-    const ticks = el.cravingAxis.querySelectorAll('.bar-axis-tick');
-    // ticks[0] = 上(最大値), ticks[1] = 中間, ticks[2] = 0
-    ticks[0].textContent = medianMax;
-    ticks[1].textContent = Math.round(medianMax / 2);
-
-    const points = [];
-    filledMedians.forEach((v, i) => {
-      if (v === null) return;
-      const x = i + 0.5;
-      const rawY = 96 - (v / medianMax) * 88;
-      const y = Math.min(96, Math.max(8, rawY));
-      points.push(`${x},${y}`);
-    });
-    el.cravingTrendLine.innerHTML = `<polyline class="combo-line-path" points="${points.join(' ')}"/>`;
-  }
-
   function medianOfGaps(smokes, wakes) {
     const gaps = [];
     for (let i = 1; i < smokes.length; i++) {
@@ -1813,10 +1443,12 @@
 
   function computeStreakForThreshold(threshold) {
     const refDayStart = startOfDay(Date.now());
+    const resetBoundary = streakResetTs !== null ? startOfDay(streakResetTs) : null;
     let days = 0;
     let cursor = refDayStart;
     let safety = 0;
     while (safety < 400) {
+      if (resetBoundary !== null && cursor < resetBoundary) break;
       const cursorTier = getDayTier(cursor);
       if (cursorTier === null || cursorTier < threshold) break;
       days++;
@@ -1942,108 +1574,26 @@
     renderHistChart();
   }
 
-  function renderCravingWeekTimeline() {
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      days.push(Date.now() - i * 24 * 60 * 60 * 1000);
-    }
-    const rows = days.map(dayTs => {
-      const entries = cravingLog.filter(r => isSameDay(r.ts, dayTs)).sort((a, b) => a.ts - b.ts);
-      if (entries.length === 0) return null;
-
-      const dots = entries.map(r => {
-        const d = new Date(r.ts);
-        const pct = ((d.getHours() * 60 + d.getMinutes()) / (24 * 60)) * 100;
-        return `<div class="timeline-dot" style="left:${pct}%;"></div>`;
-      }).join('');
-
-      const times = entries.map(r => {
-        const min = Math.round(r.value / 60000);
-        return `${formatClock(r.ts)}(${min}分)`;
-      }).join('  ');
-
-      return `<div class="timeline-day">
-        <div class="timeline-head">
-          <span>${formatShortDate(dayTs)}(${formatWeekday(dayTs)})</span>
-          <span><b>${entries.length}</b> 回</span>
-        </div>
-        <div class="timeline-track">${dots}</div>
-        <div class="timeline-times">${times}</div>
-      </div>`;
-    }).filter(Boolean);
-
-    if (rows.length === 0) {
-      el.cravingWeekTimeline.innerHTML = '';
-      el.cravingWeekEmpty.style.display = 'block';
-    } else {
-      el.cravingWeekEmpty.style.display = 'none';
-      el.cravingWeekTimeline.innerHTML = rows.join('');
-    }
-  }
-
-  function renderCravingSubview() {
-    const cravingMedian = computeCravingMedian(RETENTION_DAYS);
-    const cravingAverage = computeCravingAverage(RETENTION_DAYS);
-    el.monthMedianCraving.textContent = cravingMedian === null ? '--' : Math.round(cravingMedian / 60000);
-    el.monthAverageCraving.textContent = cravingAverage === null ? '--' : Math.round(cravingAverage / 60000);
-    renderCravingTrendChart();
-    renderCravingWeekTimeline();
-  }
-
   function renderDataSubview() {
     if (currentDataSubview === 'week') renderWeekSubview();
     else if (currentDataSubview === 'month') renderMonthSubview();
-    else if (currentDataSubview === 'craving') renderCravingSubview();
     // settingsは静的フォームなので再描画不要(保存時のみ更新)
   }
 
   // ---------- 共通 ----------
 
-  function renderCravingButton() {
-    const eligible = log.length > 0
-      && !hasCravingForCurrentInterval()
-      && !hasWakeBetween(log[log.length - 1], Date.now());
-    el.cravingBtn.style.display = eligible ? 'flex' : 'none';
-  }
-
   function render() {
     tick();
     renderMoneyPanel();
     renderStreak();
-    renderCravingButton();
     renderDataSubview();
     el.undoBtn.style.display = log.length > 0 ? 'inline-block' : 'none';
   }
 
   el.recordBtn.addEventListener('click', () => {
     const now = Date.now();
-    const prevLast = log.length > 0 ? log[log.length - 1] : null;
-
-    // 欲求ボタンを押さないまま次の一本になった場合は、回数としてだけ記録する
-    if (prevLast !== null && !hasCravingForCurrentInterval() && !hasWakeBetween(prevLast, now)) {
-      noCravingSmokeLog.push(now);
-      saveNoCravingSmokeLog(noCravingSmokeLog);
-    }
-
     log.push(now);
     saveLog(log);
-    render();
-  });
-
-  el.cravingBtn.addEventListener('click', () => {
-    if (log.length === 0) return;
-    const lastSmoke = log[log.length - 1];
-    const now = Date.now();
-    const value = now - lastSmoke;
-
-    cravingLog.push({ ts: now, value });
-    saveCravingLog(cravingLog);
-
-    const minutes = Math.round(value / 60000);
-    el.cravingFeedback.textContent = `${minutes}分で記録しました`;
-    el.cravingFeedback.style.display = 'block';
-    setTimeout(() => { el.cravingFeedback.style.display = 'none'; }, 3000);
-
     render();
   });
 
@@ -2124,11 +1674,17 @@
     const wakeThresholdHours = Math.max(1, parseInt(el.wakeThresholdInput.value, 10) || DEFAULT_SETTINGS.wakeThresholdHours);
     const wakeGoalMinutes = Math.max(1, parseInt(el.wakeGoalMinutesInput.value, 10) || DEFAULT_SETTINGS.wakeGoalMinutes);
 
+    if (goalMinutes !== settings.goalMinutes) {
+      streakResetTs = Date.now();
+      saveStreakResetTs(streakResetTs);
+    }
+
     settings = { goalMinutes, packPrice, packCount, wakeThresholdHours, wakeGoalMinutes };
     saveSettings(settings);
     renderSettingsForm();
     tick();
     renderMoneyPanel();
+    renderStreak();
     renderDataSubview();
 
     el.settingsSavedMsg.classList.add('show');
