@@ -1465,6 +1465,7 @@
     if (tier === null) return null;
 
     const days = computeStreakForThreshold(tier);
+    if (days === 0) return null; // リセット直後は「記録不足」と同じ扱いにする
     return { level: tier, days };
   }
 
@@ -1493,14 +1494,10 @@
     el.streakDays.textContent = streak.days;
     el.streakLevel.textContent = streak.level;
 
-    if (streak.days === 0) {
-      el.streakMilestones.innerHTML = '';
-    } else {
-      const milestones = computeMilestoneStreaks(streak.level);
-      el.streakMilestones.innerHTML = milestones.map(m =>
-        `<div class="streak-milestone-row"><b>${m.days}</b>日連続 中央値${m.level}分以上</div>`
-      ).join('');
-    }
+    const milestones = computeMilestoneStreaks(streak.level);
+    el.streakMilestones.innerHTML = milestones.map(m =>
+      `<div class="streak-milestone-row"><b>${m.days}</b>日連続 中央値${m.level}分以上</div>`
+    ).join('');
   }
 
   function getSingleDayMedianMinutes(dayTs) {
