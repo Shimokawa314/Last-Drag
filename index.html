@@ -1493,10 +1493,14 @@
     el.streakDays.textContent = streak.days;
     el.streakLevel.textContent = streak.level;
 
-    const milestones = computeMilestoneStreaks(streak.level);
-    el.streakMilestones.innerHTML = milestones.map(m =>
-      `<div class="streak-milestone-row"><b>${m.days}</b>日連続 中央値${m.level}分以上</div>`
-    ).join('');
+    if (streak.days === 0) {
+      el.streakMilestones.innerHTML = '';
+    } else {
+      const milestones = computeMilestoneStreaks(streak.level);
+      el.streakMilestones.innerHTML = milestones.map(m =>
+        `<div class="streak-milestone-row"><b>${m.days}</b>日連続 中央値${m.level}分以上</div>`
+      ).join('');
+    }
   }
 
   function getSingleDayMedianMinutes(dayTs) {
