@@ -1448,7 +1448,7 @@
     let cursor = refDayStart;
     let safety = 0;
     while (safety < 400) {
-      if (resetBoundary !== null && cursor < resetBoundary) break;
+      if (resetBoundary !== null && cursor <= resetBoundary) break;
       const cursorTier = getDayTier(cursor);
       if (cursorTier === null || cursorTier < threshold) break;
       days++;
